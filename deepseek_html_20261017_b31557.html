@@ -1,0 +1,1390 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<meta name="theme-color" content="#2d7a68" />
+<title>Imparo — مراجعة الإيطالية</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='45' fill='%232d7a68'/><text x='50' y='68' font-size='60' text-anchor='middle' fill='white' font-family='Georgia'>I</text></svg>">
+<style>
+/* =========================================================
+   Imparo — Single-File Styles
+   ========================================================= */
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+[hidden] { display: none !important; }
+
+:root {
+  --bg: #f7f5f0;
+  --surface: #ffffff;
+  --surface-2: #fbfaf7;
+  --primary: #2d7a68;
+  --primary-dark: #1f5a4c;
+  --primary-soft: #e4f1ed;
+  --easy: #4caf7d;      --easy-soft: #e6f5ee;
+  --medium: #eba827;    --medium-soft: #fdf3e0;
+  --hard: #e76f51;      --hard-soft: #fbe8e2;
+  --text: #23302c;
+  --text-soft: #6b7a76;
+  --border: #ece8e1;
+  --shadow-sm: 0 1px 3px rgba(30,45,40,.06);
+  --shadow-lg: 0 10px 30px rgba(30,45,40,.14);
+  --radius-sm: 12px;
+  --radius: 16px;
+  --radius-lg: 22px;
+}
+
+html, body {
+  height: 100%; background: var(--bg); color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Kufi Arabic", "Tahoma", sans-serif;
+  font-size: 15px; line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior-y: none;
+}
+body { min-height: 100vh; }
+
+/* ===== Boot / Error ===== */
+.boot-screen, .error-screen {
+  position: fixed; inset: 0; z-index: 999; background: var(--bg);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 20px; padding: 24px; text-align: center;
+}
+.boot-logo { display: flex; align-items: center; gap: 10px; }
+.boot-logo h1 { font-size: 32px; font-weight: 800; color: var(--primary-dark); }
+.boot-logo .brand-dot { width: 16px; height: 16px; border-radius: 50%; background: var(--primary); box-shadow: 0 0 0 6px var(--primary-soft); }
+.boot-spinner { width: 38px; height: 38px; border: 3px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin .8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.boot-text { color: var(--text-soft); font-size: 14px; min-height: 20px; }
+.error-icon { font-size: 56px; }
+.error-screen h2 { font-size: 20px; font-weight: 800; color: var(--hard); }
+.error-screen p { color: var(--text-soft); font-size: 14px; max-width: 340px; line-height: 1.6; white-space: pre-wrap; }
+.error-screen .btn { max-width: 240px; }
+
+/* ===== Layout ===== */
+.app { max-width: 480px; margin: 0 auto; min-height: 100vh; display: flex; flex-direction: column; background: var(--bg); }
+.app-header {
+  position: sticky; top: 0; z-index: 20;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 18px;
+  background: rgba(247,245,240,.88);
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+}
+.brand { display: flex; align-items: center; gap: 8px; }
+.brand-dot { width: 12px; height: 12px; border-radius: 50%; background: var(--primary); box-shadow: 0 0 0 4px var(--primary-soft); }
+.brand h1 { font-size: 19px; font-weight: 700; letter-spacing: .3px; color: var(--primary-dark); }
+.header-meta { display: flex; align-items: center; gap: 10px; }
+.sync-dot { width: 9px; height: 9px; border-radius: 50%; background: #b9c7c3; transition: background .2s ease; }
+.sync-dot.online { background: var(--easy); box-shadow: 0 0 0 3px rgba(76,175,125,.2); }
+.sync-dot.syncing { background: var(--medium); box-shadow: 0 0 0 3px rgba(235,168,39,.2); animation: pulse 1s infinite; }
+.sync-dot.offline { background: var(--hard); }
+@keyframes pulse { 0%,100%{transform:scale(1);} 50%{transform:scale(1.2);} }
+.streak-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: #fff; padding: 6px 12px; border-radius: 999px;
+  border: 1px solid var(--border); font-weight: 700; font-size: 14px;
+  color: var(--hard); box-shadow: var(--shadow-sm);
+}
+.app-main { flex: 1; padding: 18px; padding-bottom: 40px; }
+.view { display: none; animation: fadeUp .28s ease; }
+.view.is-active { display: block; }
+@keyframes fadeUp { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
+
+/* ===== Stats ===== */
+.stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+.stat-card {
+  background: var(--surface); border-radius: var(--radius);
+  padding: 14px 12px; text-align: center;
+  box-shadow: var(--shadow-sm); border: 1px solid var(--border);
+}
+.stat-value { font-size: 24px; font-weight: 800; color: var(--primary-dark); line-height: 1.2; }
+.stat-label { font-size: 12px; color: var(--text-soft); margin-top: 2px; }
+
+/* ===== Buttons ===== */
+.btn {
+  border: none; border-radius: var(--radius);
+  padding: 14px 18px; font-family: inherit; font-size: 15px; font-weight: 700;
+  cursor: pointer; transition: transform .12s ease, box-shadow .2s ease, background .2s ease;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  width: 100%;
+}
+.btn:active { transform: scale(.98); }
+.btn:disabled { opacity: .6; cursor: not-allowed; }
+.btn-primary { background: var(--primary); color: #fff; box-shadow: 0 6px 16px rgba(45,122,104,.28); }
+.btn-primary:hover:not(:disabled) { background: var(--primary-dark); }
+.btn-primary:disabled { background: #b9c7c3; box-shadow: none; }
+.btn-secondary { background: var(--primary-soft); color: var(--primary-dark); }
+.btn-secondary:hover:not(:disabled) { background: #d5ebe4; }
+.btn-icon { background: transparent; border: none; width: 38px; height: 38px; border-radius: 50%; font-size: 17px; color: var(--text); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; transition: background .15s ease; }
+.btn-icon:hover { background: rgba(0,0,0,.06); }
+.btn-hero { padding: 20px 22px; border-radius: var(--radius-lg); font-size: 16px; justify-content: space-between; margin-bottom: 18px; }
+.btn-hero-count { background: rgba(255,255,255,.25); border-radius: 999px; padding: 3px 12px; font-size: 14px; font-weight: 800; }
+
+/* ===== Card / Input ===== */
+.card { background: var(--surface); border-radius: var(--radius); padding: 18px; box-shadow: var(--shadow-sm); border: 1px solid var(--border); margin-bottom: 16px; }
+.section-title { font-size: 14px; font-weight: 700; color: var(--text-soft); margin-bottom: 12px; }
+.input {
+  width: 100%; border: 1px solid var(--border); background: var(--surface-2);
+  padding: 12px 14px; border-radius: var(--radius-sm);
+  font-family: inherit; font-size: 15px; color: var(--text); outline: none;
+  margin-bottom: 10px; transition: border-color .15s ease, background .15s ease;
+}
+.input:focus { border-color: var(--primary); background: #fff; }
+textarea.input { resize: vertical; min-height: 60px; }
+
+/* ===== Lists Nav ===== */
+.lists-nav { display: flex; flex-direction: column; gap: 8px; }
+.list-btn {
+  display: flex; align-items: center; gap: 12px; width: 100%;
+  padding: 14px 16px; background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); cursor: pointer; font-family: inherit; font-size: 15px;
+  color: var(--text); text-align: right; box-shadow: var(--shadow-sm);
+  transition: transform .12s ease, border-color .15s ease;
+}
+.list-btn:hover { border-color: var(--primary); transform: translateY(-1px); }
+.list-icon { font-size: 18px; }
+.list-text { flex: 1; font-weight: 600; }
+.list-count { background: var(--primary-soft); color: var(--primary-dark); border-radius: 999px; padding: 2px 10px; font-size: 13px; font-weight: 700; min-width: 30px; text-align: center; }
+
+/* ===== Review ===== */
+.review-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+.review-progress { flex: 1; display: flex; align-items: center; gap: 10px; }
+.progress-track { flex: 1; height: 6px; background: var(--border); border-radius: 999px; overflow: hidden; }
+.progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--primary), var(--easy)); border-radius: 999px; transition: width .35s ease; }
+#progressText { font-size: 13px; color: var(--text-soft); font-weight: 700; white-space: nowrap; }
+.card-stage { perspective: 1400px; margin-bottom: 18px; }
+.flip-card { cursor: pointer; }
+.flip-card-inner { display: grid; transition: transform .6s cubic-bezier(.4,.2,.2,1); transform-style: preserve-3d; }
+.flip-card.is-flipped .flip-card-inner { transform: rotateY(180deg); }
+.flip-face {
+  grid-area: 1/1; backface-visibility: hidden; -webkit-backface-visibility: hidden;
+  background: var(--surface); border-radius: var(--radius-lg); padding: 28px 22px;
+  box-shadow: var(--shadow-lg); border: 1px solid var(--border);
+  min-height: 320px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px;
+}
+.flip-back { transform: rotateY(180deg); background: linear-gradient(160deg, #ffffff, #f1faf6); }
+.sentence-it { font-size: 26px; font-weight: 700; line-height: 1.5; color: var(--text); text-align: center; direction: ltr; font-family: "Georgia", "Iowan Old Style", serif; }
+.sentence-it .word { display: inline-block; padding: 0 2px; border-radius: 6px; transition: background .15s ease, color .15s ease; cursor: pointer; }
+.sentence-it .word:hover, .sentence-it .word:active { background: var(--primary-soft); color: var(--primary-dark); }
+.sentence-ar { font-size: 22px; font-weight: 600; color: var(--primary-dark); text-align: center; line-height: 1.6; }
+.btn-speak { background: var(--primary-soft); color: var(--primary-dark); border: none; width: 52px; height: 52px; border-radius: 50%; font-size: 22px; cursor: pointer; box-shadow: var(--shadow-sm); transition: transform .15s ease, background .15s ease; }
+.btn-speak:active { transform: scale(.94); background: #d1e9e0; }
+.hint { font-size: 12.5px; color: var(--text-soft); }
+.rating-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; opacity: 0; pointer-events: none; transition: opacity .3s ease; }
+.rating-row.is-visible { opacity: 1; pointer-events: auto; }
+.btn-rating { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 14px 8px; border: none; border-radius: var(--radius); cursor: pointer; font-family: inherit; font-weight: 700; font-size: 13.5px; transition: transform .12s ease, box-shadow .2s ease; box-shadow: var(--shadow-sm); }
+.btn-rating:active { transform: scale(.96); }
+.rating-emoji { font-size: 22px; }
+.btn-hard { background: var(--hard-soft); color: #a94633; }
+.btn-medium { background: var(--medium-soft); color: #a76b0f; }
+.btn-easy { background: var(--easy-soft); color: #2c8159; }
+
+/* ===== Summary ===== */
+#view-summary { text-align: center; padding-top: 20px; }
+.summary-emoji { font-size: 64px; margin-bottom: 8px; animation: pop .5s ease; }
+@keyframes pop { 0%{transform:scale(0);} 60%{transform:scale(1.15);} 100%{transform:scale(1);} }
+.summary-title { font-size: 24px; font-weight: 800; color: var(--primary-dark); margin-bottom: 4px; }
+.summary-sub { color: var(--text-soft); margin-bottom: 22px; }
+.summary-stats { background: var(--surface); border-radius: var(--radius); padding: 18px; margin-bottom: 22px; box-shadow: var(--shadow-sm); border: 1px solid var(--border); display: grid; grid-template-columns: 1fr 1fr; gap: 14px 8px; }
+.summary-item { display: flex; flex-direction: column; gap: 2px; }
+.summary-item .v { font-size: 22px; font-weight: 800; }
+.summary-item .l { font-size: 12px; color: var(--text-soft); }
+.summary-item.easy .v { color: var(--easy); }
+.summary-item.medium .v { color: var(--medium); }
+.summary-item.hard .v { color: var(--hard); }
+.summary-item.total .v { color: var(--primary-dark); }
+
+/* ===== List View ===== */
+.list-header { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
+.list-header h2 { font-size: 18px; font-weight: 800; }
+.list-actions { display: flex; gap: 8px; margin-bottom: 12px; }
+.list-actions .btn { flex: 1; padding: 10px 12px; font-size: 13.5px; border-radius: 12px; }
+.list-content { display: flex; flex-direction: column; gap: 10px; }
+.list-item { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; box-shadow: var(--shadow-sm); }
+.list-item-it { direction: ltr; text-align: left; font-family: "Georgia", serif; font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+.list-item-ar { font-size: 14.5px; color: var(--text-soft); margin-bottom: 8px; }
+.list-item-meta { display: flex; flex-wrap: wrap; gap: 6px; font-size: 11.5px; color: var(--text-soft); margin-bottom: 10px; }
+.badge { background: var(--surface-2); border: 1px solid var(--border); padding: 2px 8px; border-radius: 999px; }
+.badge.easy { background: var(--easy-soft); color: #2c8159; border-color: transparent; }
+.badge.medium { background: var(--medium-soft); color: #a76b0f; border-color: transparent; }
+.badge.hard { background: var(--hard-soft); color: #a94633; border-color: transparent; }
+.badge.frozen { background: #e8f1f8; color: #3a6a92; border-color: transparent; }
+.list-item-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+.mini-btn { border: none; border-radius: 10px; padding: 7px 10px; font-family: inherit; font-size: 12.5px; font-weight: 700; cursor: pointer; background: var(--surface-2); color: var(--text); border: 1px solid var(--border); transition: transform .1s ease, background .15s ease; }
+.mini-btn:active { transform: scale(.96); }
+.mini-btn.ok { background: var(--easy-soft); color: #2c8159; border-color: transparent; }
+.mini-btn.no { background: var(--hard-soft); color: #a94633; border-color: transparent; }
+.mini-btn.freeze { background: #e8f1f8; color: #3a6a92; border-color: transparent; }
+.mini-btn.danger { background: #fbe8e2; color: #a94633; border-color: transparent; }
+.empty-state { text-align: center; color: var(--text-soft); padding: 40px 12px; font-size: 14px; }
+.empty-state .em { font-size: 40px; display: block; margin-bottom: 10px; }
+
+/* ===== Popup Overlay ===== */
+.popup-overlay {
+  position: fixed; inset: 0; z-index: 100;
+  background: rgba(20,30,28,.45); backdrop-filter: blur(3px);
+  display: none; align-items: center; justify-content: center;
+  padding: 16px; animation: fadeIn .2s ease;
+}
+.popup-overlay.is-open { display: flex; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: none; opacity: 1; } }
+
+/* =========================================================
+   Dictionary Popup — Dynamic by Type
+   ========================================================= */
+.dict-popup {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  width: 100%; max-width: 400px;
+  max-height: 88vh; overflow-y: auto;
+  box-shadow: var(--shadow-lg);
+  animation: slideUp .25s ease;
+  overflow-x: hidden;
+}
+.dict-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 16px;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--border);
+}
+.dict-header-left { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 13px; }
+.dict-type-icon { font-size: 18px; line-height: 1; }
+.dict-type-label {
+  padding: 3px 11px; border-radius: 999px;
+  background: var(--surface); border: 1px solid var(--border);
+  font-size: 11.5px; font-weight: 700;
+  letter-spacing: .3px;
+}
+.dict-header-main { padding: 14px 18px 6px; text-align: center; }
+.dict-word {
+  font-size: 26px; font-weight: 800; color: var(--text);
+  font-family: "Georgia", serif; margin-bottom: 4px; line-height: 1.2;
+}
+.dict-lemma {
+  font-size: 13.5px; color: var(--text-soft);
+  font-style: italic; font-family: "Georgia", serif;
+}
+.dict-body { padding: 8px 18px 18px; }
+.dict-meaning {
+  font-size: 17px; font-weight: 600;
+  padding: 12px 14px;
+  background: var(--surface-2);
+  border-radius: var(--radius-sm);
+  margin-bottom: 12px;
+  text-align: center;
+  line-height: 1.6;
+}
+.dict-summary {
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 12px;
+}
+.summary-label { font-size: 12px; font-weight: 800; margin-bottom: 6px; opacity: .9; letter-spacing: .2px; }
+.summary-text { font-size: 14px; line-height: 1.7; white-space: pre-wrap; word-break: break-word; }
+
+/* ----- VERB (Blue) ----- */
+.dict-popup[data-type="verb"] .dict-header {
+  background: linear-gradient(135deg, #e0ecff, #c7d9ff);
+  border-bottom-color: #b8ceff;
+}
+.dict-popup[data-type="verb"] .dict-type-label {
+  background: #4a6ee0; color: #fff; border-color: transparent;
+}
+.dict-popup[data-type="verb"] .dict-word { color: #2a4cb5; }
+.dict-popup[data-type="verb"] .dict-lemma { color: #5a7ec0; }
+.dict-popup[data-type="verb"] .dict-meaning {
+  background: #e8efff; color: #2a4cb5;
+}
+.dict-popup[data-type="verb"] .dict-summary-verb {
+  background: #f0f4ff;
+  border: 1px solid #c7d9ff;
+  color: #2a4cb5;
+}
+.dict-popup[data-type="verb"] .dict-summary-verb .summary-label { color: #4a6ee0; }
+
+/* ----- PREPOSITION (Orange) ----- */
+.dict-popup[data-type="preposition"] .dict-header {
+  background: linear-gradient(135deg, #ffe8d4, #ffd4b3);
+  border-bottom-color: #ffc094;
+}
+.dict-popup[data-type="preposition"] .dict-type-label {
+  background: #e08a3a; color: #fff; border-color: transparent;
+}
+.dict-popup[data-type="preposition"] .dict-word { color: #a55a1a; }
+.dict-popup[data-type="preposition"] .dict-meaning {
+  background: #fff0e0; color: #a55a1a;
+}
+.dict-popup[data-type="preposition"] .dict-summary-usage {
+  background: #fff5eb;
+  border: 1px solid #ffd4b3;
+  border-right: 3px solid #e08a3a;
+  color: #7a4210;
+}
+.dict-popup[data-type="preposition"] .dict-summary-usage .summary-label { color: #e08a3a; }
+
+/* ----- ARTICLE (Green) ----- */
+.dict-popup[data-type="article"] .dict-header {
+  background: linear-gradient(135deg, #d4f0e4, #b8e6d2);
+  border-bottom-color: #9edcc0;
+}
+.dict-popup[data-type="article"] .dict-type-label {
+  background: #3a9a6a; color: #fff; border-color: transparent;
+}
+.dict-popup[data-type="article"] .dict-word { color: #1f6a45; }
+.dict-popup[data-type="article"] .dict-meaning {
+  background: #e6f7ee; color: #1f6a45;
+}
+.dict-popup[data-type="article"] .dict-summary-usage {
+  background: #f0faf5;
+  border: 1px solid #b8e6d2;
+  border-right: 3px solid #3a9a6a;
+  color: #1a5035;
+}
+.dict-popup[data-type="article"] .dict-summary-usage .summary-label { color: #3a9a6a; }
+
+/* ----- WORD (Neutral) ----- */
+.dict-popup[data-type="word"] .dict-summary-note {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+.dict-popup[data-type="word"] .dict-summary-note .summary-label { color: var(--primary-dark); }
+
+/* ----- FORM mode ----- */
+.dict-popup[data-type="form"] .dict-header {
+  background: var(--primary-soft);
+  border-bottom-color: #c7dfd6;
+}
+.dict-popup[data-type="form"] .dict-type-label {
+  background: var(--primary); color: #fff; border-color: transparent;
+}
+.dict-popup[data-type="form"] .dict-word { font-size: 22px; }
+
+/* ----- LOADING mode ----- */
+.dict-popup[data-type="loading"] .dict-header { background: var(--surface-2); }
+.dict-loading { text-align: center; color: var(--text-soft); padding: 24px 0; font-size: 14px; }
+.dict-loading::after {
+  content: ''; display: inline-block; width: 14px; height: 14px;
+  border: 2px solid var(--border); border-top-color: var(--primary);
+  border-radius: 50%; margin-inline-start: 8px; vertical-align: middle;
+  animation: spin .7s linear infinite;
+}
+
+.dict-field-label {
+  display: block; font-size: 12.5px; font-weight: 700;
+  color: var(--text-soft); margin-bottom: 4px; margin-top: 10px;
+}
+.dict-body .input { margin-bottom: 6px; }
+.btn-dict-edit {
+  background: var(--surface-2); color: var(--text-soft);
+  border: 1px solid var(--border);
+  padding: 9px 14px; border-radius: 10px;
+  font-family: inherit; font-size: 12.5px; font-weight: 700;
+  cursor: pointer; width: 100%; margin-top: 4px;
+  transition: background .15s ease;
+}
+.btn-dict-edit:hover { background: var(--border); }
+
+/* ===== Toast ===== */
+.toast {
+  position: fixed; bottom: 24px; left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: #23302c; color: #fff;
+  padding: 10px 18px; border-radius: 999px;
+  font-size: 13.5px; font-weight: 600;
+  z-index: 200; opacity: 0; pointer-events: none;
+  transition: opacity .25s ease, transform .25s ease;
+  max-width: 88vw; text-align: center;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.toast.ok { background: var(--easy); }
+.toast.err { background: var(--hard); }
+.toast.warn { background: var(--medium); color: #3a2c05; }
+</style>
+</head>
+<body>
+
+<!-- Boot Screen -->
+<div id="bootScreen" class="boot-screen">
+  <div class="boot-logo"><span class="brand-dot"></span><h1>Imparo</h1></div>
+  <div class="boot-spinner"></div>
+  <p class="boot-text" id="bootText">جاري التحميل…</p>
+</div>
+
+<!-- Error Screen -->
+<div id="errorScreen" class="error-screen" hidden>
+  <div class="error-icon">⚠️</div>
+  <h2>تعذّر تشغيل التطبيق</h2>
+  <p id="errorMessage"></p>
+  <button class="btn btn-primary" onclick="location.reload()">إعادة المحاولة</button>
+</div>
+
+<!-- App -->
+<div class="app" id="appRoot" hidden>
+
+  <header class="app-header">
+    <div class="brand"><span class="brand-dot"></span><h1>Imparo</h1></div>
+    <div class="header-meta">
+      <span class="sync-dot" id="syncDot" title="متصل بـ Firebase"></span>
+      <div class="streak-badge" title="الأيام المتتالية">
+        <span class="flame">🔥</span><span id="streakValue">0</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="app-main">
+
+    <!-- ===== Dashboard ===== -->
+    <section id="view-dashboard" class="view is-active">
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-value" id="statDue">0</div><div class="stat-label">مستحقة اليوم</div></div>
+        <div class="stat-card"><div class="stat-value" id="statReviewed">0</div><div class="stat-label">تمت مراجعتها</div></div>
+        <div class="stat-card"><div class="stat-value" id="statMistakes">0</div><div class="stat-label">جمل صعبة</div></div>
+        <div class="stat-card"><div class="stat-value" id="statFrozen">0</div><div class="stat-label">مجمّدة</div></div>
+      </div>
+
+      <button class="btn btn-primary btn-hero" id="btnStartReview">
+        <span class="btn-hero-label">ابدأ المراجعة اليومية</span>
+        <span class="btn-hero-count" id="heroCount">0</span>
+      </button>
+
+      <div class="card quick-add">
+        <h3 class="section-title">➕ إضافة سريعة</h3>
+        <input type="text" id="inputItalian" class="input" placeholder="الجملة الإيطالية…" dir="ltr" autocomplete="off" />
+        <input type="text" id="inputArabic" class="input" placeholder="الترجمة العربية…" autocomplete="off" />
+        <button class="btn btn-secondary" id="btnQuickAdd">إضافة جملة إلى السحابة</button>
+      </div>
+
+      <div class="lists-nav">
+        <button class="list-btn" data-list="today"><span class="list-icon">📅</span><span class="list-text">المراجعة اليومية</span><span class="list-count" id="navTodayCount">0</span></button>
+        <button class="list-btn" data-list="mistakes"><span class="list-icon">⚠️</span><span class="list-text">الجمل الصعبة</span><span class="list-count" id="navMistakesCount">0</span></button>
+        <button class="list-btn" data-list="frozen"><span class="list-icon">❄️</span><span class="list-text">المجمّدة</span><span class="list-count" id="navFrozenCount">0</span></button>
+        <button class="list-btn" data-list="all"><span class="list-icon">📚</span><span class="list-text">كل الجمل</span><span class="list-count" id="navAllCount">0</span></button>
+      </div>
+    </section>
+
+    <!-- ===== Review ===== -->
+    <section id="view-review" class="view">
+      <div class="review-header">
+        <button class="btn-icon" id="btnExitReview" aria-label="خروج">✕</button>
+        <div class="review-progress">
+          <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+          <span id="progressText">0 / 0</span>
+        </div>
+      </div>
+
+      <div class="card-stage">
+        <div class="flip-card" id="flipCard">
+          <div class="flip-card-inner">
+            <div class="flip-face flip-front">
+              <div class="sentence-it" id="cardItalian"></div>
+              <button class="btn-speak" id="btnSpeak" title="إعادة النطق">🔊</button>
+              <div class="hint">اضغط لكشف الترجمة</div>
+            </div>
+            <div class="flip-face flip-back">
+              <div class="sentence-ar" id="cardArabic"></div>
+              <div class="hint">قيّم مستوى صعوبة البطاقة</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="rating-row" id="ratingRow">
+        <button class="btn-rating btn-hard" data-rating="hard"><span class="rating-emoji">😰</span><span class="rating-label">صعب</span></button>
+        <button class="btn-rating btn-medium" data-rating="medium"><span class="rating-emoji">🙂</span><span class="rating-label">متوسط</span></button>
+        <button class="btn-rating btn-easy" data-rating="easy"><span class="rating-emoji">😎</span><span class="rating-label">سهل</span></button>
+      </div>
+    </section>
+
+    <!-- ===== Summary ===== -->
+    <section id="view-summary" class="view">
+      <div class="summary-emoji">🎉</div>
+      <h2 class="summary-title">أحسنت!</h2>
+      <p class="summary-sub" id="summarySub">أكملت مراجعة اليوم</p>
+      <div class="summary-stats" id="summaryStats"></div>
+      <button class="btn btn-primary" id="btnBackHome">العودة للرئيسية</button>
+    </section>
+
+    <!-- ===== List ===== -->
+    <section id="view-list" class="view">
+      <div class="list-header">
+        <button class="btn-icon" id="btnBackList" aria-label="رجوع">←</button>
+        <h2 id="listTitle">القائمة</h2>
+      </div>
+      <div class="list-actions" id="listActions"></div>
+      <div class="list-content" id="listContent"></div>
+    </section>
+
+  </main>
+
+  <!-- Dictionary Popup Overlay -->
+  <div class="popup-overlay" id="popupOverlay">
+    <div class="popup" id="popupDict"></div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+</div>
+
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+<script>
+/* =========================================================
+   Imparo — Single-File App
+   ========================================================= */
+(function () {
+  'use strict';
+
+  /* =========================================================
+     CONFIG
+     ========================================================= */
+  const FIREBASE_CONFIG = {
+    apiKey:            "AIzaSyA0Ca2fqu7Pw80sKhXVuqaz5h3UIaau_LQ",
+    authDomain:        "imparo-53eea.firebaseapp.com",
+    projectId:         "imparo-53eea",
+    storageBucket:     "imparo-53eea.firebasestorage.app",
+    messagingSenderId: "558351996816",
+    appId:             "1:558351996816:web:6698c08e636482e2908515"
+  };
+  const USER_ID = "ahmed_imparo_53eea_x7k9m2p4q8w3_admin";
+
+  /* =========================================================
+     SRS — خوارزمية التكرار المتباعد
+     ========================================================= */
+  const SRS = (function () {
+    const REVIEW_HOUR = 10;
+    const EASY_STREAK_MAX = 4;
+    const EASY_DAYS = 7;
+    const EASY_LONG_DAYS = 30;
+    const MEDIUM_DAYS = 2;
+    const MEDIUM_STREAK_MAX = 4;
+
+    function startOfReviewDay(now = new Date()) {
+      const d = new Date(now);
+      if (d.getHours() < REVIEW_HOUR) d.setDate(d.getDate() - 1);
+      d.setHours(0, 0, 0, 0);
+      return d;
+    }
+
+    function reviewDayKey(now = new Date()) {
+      const d = startOfReviewDay(now);
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${y}-${m}-${day}`;
+    }
+
+    function scheduleIn(daysAhead, now = new Date()) {
+      const d = new Date(now);
+      d.setDate(d.getDate() + daysAhead);
+      d.setHours(REVIEW_HOUR, 0, 0, 0);
+      return d.getTime();
+    }
+
+    function isDue(s, now = Date.now()) {
+      if (!s) return false;
+      if (s.is_frozen) return false;
+      if (s.in_mistake_bank) return false;
+      return (s.next_review || 0) <= now;
+    }
+
+    function applyEasy(s, now = new Date()) {
+      const streak = (s.easy_streak || 0) + 1;
+      const days = streak > EASY_STREAK_MAX ? EASY_LONG_DAYS : EASY_DAYS;
+      return { next_review: scheduleIn(days, now), easy_streak: streak, medium_streak: 0, in_mistake_bank: false, last_reviewed: now.getTime() };
+    }
+    function applyMedium(s, now = new Date()) {
+      const mStreak = Math.min((s.medium_streak || 0) + 1, MEDIUM_STREAK_MAX);
+      return { next_review: scheduleIn(MEDIUM_DAYS, now), medium_streak: mStreak, easy_streak: 0, in_mistake_bank: false, last_reviewed: now.getTime() };
+    }
+    function applyHard(s, now = new Date()) {
+      return { next_review: scheduleIn(1, now), easy_streak: 0, medium_streak: 0, in_mistake_bank: true, last_reviewed: now.getTime() };
+    }
+    function applyCorrectFromMistakes(s, now = new Date()) {
+      return { next_review: scheduleIn(1, now), in_mistake_bank: false, easy_streak: 0, medium_streak: 0, last_reviewed: now.getTime() };
+    }
+    function applyWrongFromMistakes(s, now = new Date()) {
+      return { next_review: scheduleIn(1, now), easy_streak: 0, medium_streak: 0, in_mistake_bank: true, last_reviewed: now.getTime() };
+    }
+
+    return { REVIEW_HOUR, startOfReviewDay, reviewDayKey, scheduleIn, isDue, applyEasy, applyMedium, applyHard, applyCorrectFromMistakes, applyWrongFromMistakes };
+  })();
+
+  /* =========================================================
+     Speech — Web Speech API + Fallback
+     ========================================================= */
+  const Speech = (function () {
+    const supported = 'speechSynthesis' in window;
+    let voices = [], voicesReady = false, fallbackHandler = null, warnedOnce = false, cachedVoice = null;
+
+    function loadVoices() {
+      if (!supported) return;
+      try { voices = window.speechSynthesis.getVoices() || []; voicesReady = voices.length > 0; }
+      catch (err) { console.warn('[Speech] loadVoices:', err); }
+    }
+    if (supported) {
+      loadVoices();
+      window.speechSynthesis.onvoiceschanged = () => { loadVoices(); cachedVoice = null; };
+      setTimeout(loadVoices, 300);
+      setTimeout(loadVoices, 1200);
+    }
+
+    function pickItalianVoice() {
+      if (cachedVoice) return cachedVoice;
+      if (!voicesReady) loadVoices();
+      let v = voices.find(x => (x.lang || '').replace('_', '-').toLowerCase() === 'it-it');
+      if (v) return (cachedVoice = { voice: v, tier: 'exact' });
+      v = voices.find(x => /^it([-_]|$)/i.test(x.lang || ''));
+      if (v) return (cachedVoice = { voice: v, tier: 'italian' });
+      v = voices.find(x => /ital/i.test(x.name || ''));
+      if (v) return (cachedVoice = { voice: v, tier: 'name-based' });
+      return (cachedVoice = { voice: null, tier: 'none' });
+    }
+
+    function speak(text) {
+      if (!text || !text.trim()) return;
+      if (!supported) { notifyFallback('هذا المتصفح لا يدعم النطق الصوتي.'); return; }
+      try {
+        window.speechSynthesis.cancel();
+        const u = new SpeechSynthesisUtterance(text);
+        const pick = pickItalianVoice();
+        if (pick.voice) { u.voice = pick.voice; u.lang = pick.voice.lang || 'it-IT'; }
+        else { u.lang = 'it-IT'; if (!warnedOnce) { warnedOnce = true; notifyFallback('لا يتوفر صوت إيطالي — سيُستخدم الصوت الافتراضي.'); } }
+        u.rate = 0.9; u.pitch = 1; u.volume = 1;
+        u.onerror = (e) => console.warn('[Speech] error:', e.error || e);
+        window.speechSynthesis.speak(u);
+      } catch (err) { console.warn('[Speech] speak:', err); notifyFallback('تعذّر تشغيل النطق.'); }
+    }
+    function notifyFallback(msg) { if (typeof fallbackHandler === 'function') { try { fallbackHandler(msg); } catch(_){} } }
+    function setFallbackHandler(fn) { fallbackHandler = fn; }
+    function cancel() { if (supported) { try { window.speechSynthesis.cancel(); } catch(_){} } }
+    return { speak, setFallbackHandler, cancel };
+  })();
+
+  /* =========================================================
+     Store — Firestore (Fixed USER_ID, No Auth)
+     ========================================================= */
+  const Store = (function () {
+    let db = null, uid = null, ready = false;
+
+    function ensureReady() { if (!ready) throw new Error('Store غير مهيأ.'); }
+
+    async function init(onStatus) {
+      if (!window.firebase) throw new Error('مكتبات Firebase غير محمّلة.');
+      if (!FIREBASE_CONFIG.apiKey || /^YOUR_/.test(FIREBASE_CONFIG.apiKey)) throw new Error('اضبط مفاتيح Firebase.');
+      if (!USER_ID || USER_ID.length < 8) throw new Error('USER_ID غير صالح.');
+
+      if (onStatus) onStatus('جارٍ الاتصال بقاعدة البيانات…');
+      if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+      db = firebase.firestore();
+      uid = USER_ID;
+      ready = true;
+
+      try { await db.enablePersistence({ synchronizeTabs: true }); }
+      catch (e) { console.warn('[Store] persistence:', e.code || e.message); }
+
+      if (onStatus) onStatus('جارٍ التحقق من المسار…');
+      try { await db.collection('users').doc(uid).get(); }
+      catch (err) {
+        throw new Error('فشل الوصول للقاعدة [' + (err.code || 'unknown') + ']: ' + (err.message || 'تحقق من القواعد'));
+      }
+      console.info('[Store] جاهز. USER_ID =', uid);
+      return uid;
+    }
+
+    function userRef() { ensureReady(); return db.collection('users').doc(uid); }
+    function sentencesCol() { ensureReady(); return userRef().collection('sentences'); }
+    function dictCol() { ensureReady(); return userRef().collection('dictionary'); }
+
+    const defaultUser = () => ({ streak: 0, last_review_day: null, reviewed_today: 0, reviewed_day_key: null, created_at: Date.now(), updated_at: Date.now() });
+
+    async function loadUser() {
+      ensureReady();
+      const ref = userRef(); const snap = await ref.get();
+      if (!snap.exists) { const d = defaultUser(); await ref.set(d, { merge: true }); return d; }
+      return Object.assign(defaultUser(), snap.data());
+    }
+    async function saveUser(patch) {
+      ensureReady();
+      await userRef().set(Object.assign({}, patch, { updated_at: Date.now() }), { merge: true });
+    }
+
+    async function loadSentences() {
+      ensureReady();
+      const snap = await sentencesCol().get();
+      return snap.docs.map(d => Object.assign({ id: d.id }, d.data()));
+    }
+    async function addSentence(data) {
+      ensureReady();
+      const ref = await sentencesCol().add(Object.assign({}, data));
+      return Object.assign({ id: ref.id }, data);
+    }
+    async function updateSentence(id, patch) { ensureReady(); await sentencesCol().doc(id).set(patch, { merge: true }); }
+    async function deleteSentence(id) { ensureReady(); await sentencesCol().doc(id).delete(); }
+
+    function normalizeKey(word) {
+      return String(word || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^\p{L}']/gu, '').trim();
+    }
+
+    async function loadDictionary() {
+      ensureReady();
+      const snap = await dictCol().get();
+      const dict = {};
+      snap.docs.forEach(d => { dict[d.id] = Object.assign({ id: d.id }, d.data() || {}); });
+      return dict;
+    }
+
+    async function getDictionaryEntry(wordKey) {
+      ensureReady();
+      const snap = await dictCol().doc(wordKey).get();
+      return snap.exists ? Object.assign({ id: snap.id }, snap.data()) : null;
+    }
+
+    async function saveDictionaryEntry(wordKey, entry) {
+      ensureReady();
+      if (!wordKey) return;
+      await dictCol().doc(wordKey).set(Object.assign({}, entry, { updated_at: Date.now() }), { merge: true });
+    }
+
+    function getUid() { return uid; }
+
+    return { init, loadUser, saveUser, loadSentences, addSentence, updateSentence, deleteSentence, loadDictionary, getDictionaryEntry, saveDictionaryEntry, normalizeKey, getUid };
+  })();
+
+  /* =========================================================
+     State & Helpers
+     ========================================================= */
+  const state = {
+    user: null, sentences: [], dict: {},
+    queue: [], qIndex: 0, flipped: false,
+    session: { easy: 0, medium: 0, hard: 0 },
+    listMode: null, busy: false
+  };
+
+  const $ = sel => document.querySelector(sel);
+  const $$ = sel => Array.from(document.querySelectorAll(sel));
+  const escapeHtml = s => String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+
+  let toastTimer = null;
+  function toast(msg, type = 'info') {
+    const el = $('#toast'); if (!el) return;
+    el.textContent = msg;
+    el.className = 'toast show' + (type === 'ok' ? ' ok' : type === 'err' ? ' err' : type === 'warn' ? ' warn' : '');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.classList.remove('show'), 2600);
+  }
+
+  function setSync(s) { const d = $('#syncDot'); if (d) d.className = 'sync-dot ' + (s || ''); }
+
+  function showView(name) {
+    $$('.view').forEach(v => v.classList.remove('is-active'));
+    const el = document.getElementById('view-' + name);
+    if (el) el.classList.add('is-active');
+    window.scrollTo({ top: 0, behavior: 'auto' });
+  }
+
+  const dueToday = () => state.sentences.filter(s => SRS.isDue(s));
+  const mistakesList = () => state.sentences.filter(s => s.in_mistake_bank && !s.is_frozen);
+  const frozenList = () => state.sentences.filter(s => s.is_frozen);
+
+  /* =========================================================
+     Streak / Daily
+     ========================================================= */
+  function resetDailyCounterIfNeeded() {
+    const todayKey = SRS.reviewDayKey();
+    if (state.user.reviewed_day_key !== todayKey) {
+      state.user.reviewed_day_key = todayKey;
+      state.user.reviewed_today = 0;
+    }
+  }
+  function bumpStreakIfFirstReviewOfDay() {
+    const todayKey = SRS.reviewDayKey();
+    if (state.user.last_review_day === todayKey) return;
+    if (state.user.last_review_day) {
+      const y = new Date(); y.setDate(y.getDate() - 1);
+      const yKey = SRS.reviewDayKey(y);
+      state.user.streak = state.user.last_review_day === yKey ? (state.user.streak || 0) + 1 : 1;
+    } else { state.user.streak = 1; }
+    state.user.last_review_day = todayKey;
+  }
+
+  /* =========================================================
+     Dashboard
+     ========================================================= */
+  function renderDashboard() {
+    resetDailyCounterIfNeeded();
+    const due = dueToday().length;
+    const mistakes = mistakesList().length;
+    const frozen = frozenList().length;
+    const total = state.sentences.length;
+
+    $('#statDue').textContent = due;
+    $('#statReviewed').textContent = state.user.reviewed_today || 0;
+    $('#statMistakes').textContent = mistakes;
+    $('#statFrozen').textContent = frozen;
+    $('#heroCount').textContent = due;
+    $('#navTodayCount').textContent = due;
+    $('#navMistakesCount').textContent = mistakes;
+    $('#navFrozenCount').textContent = frozen;
+    $('#navAllCount').textContent = total;
+    $('#streakValue').textContent = state.user.streak || 0;
+
+    const btn = $('#btnStartReview');
+    btn.disabled = due === 0;
+    btn.classList.toggle('btn-primary', due > 0);
+    btn.classList.toggle('btn-secondary', due === 0);
+  }
+
+  /* =========================================================
+     Quick Add
+     ========================================================= */
+  async function quickAdd() {
+    if (state.busy) return;
+    const italian = $('#inputItalian').value.trim();
+    const arabic = $('#inputArabic').value.trim();
+    if (!italian || !arabic) { toast('أكمل الحقلين من فضلك', 'err'); return; }
+
+    state.busy = true; setSync('syncing');
+    const payload = {
+      italian, arabic,
+      next_review: Date.now() - 1,
+      easy_streak: 0, medium_streak: 0,
+      in_mistake_bank: false, is_frozen: false,
+      created_at: Date.now(), last_reviewed: null
+    };
+    try {
+      const saved = await Store.addSentence(payload);
+      state.sentences.push(saved);
+      $('#inputItalian').value = ''; $('#inputArabic').value = '';
+      toast('تمت إضافة الجملة إلى السحابة ✓', 'ok');
+      renderDashboard(); $('#inputItalian').focus(); setSync('online');
+    } catch (err) { console.error(err); toast('فشل الحفظ', 'err'); setSync('offline'); }
+    finally { state.busy = false; }
+  }
+
+  /* =========================================================
+     Review Flow
+     ========================================================= */
+  function startReview() {
+    const q = dueToday();
+    if (q.length === 0) { toast('لا توجد بطاقات مستحقة اليوم'); return; }
+    state.queue = q; state.qIndex = 0;
+    state.session = { easy: 0, medium: 0, hard: 0 };
+    showView('review'); renderCard();
+  }
+
+  function renderCard() {
+    const s = state.queue[state.qIndex];
+    if (!s) { finishReview(); return; }
+
+    state.flipped = false;
+    $('#flipCard').classList.remove('is-flipped');
+    $('#ratingRow').classList.remove('is-visible');
+
+    const italianEl = $('#cardItalian'); italianEl.innerHTML = '';
+    renderItalianWords(italianEl, s.italian);
+    $('#cardArabic').textContent = s.arabic;
+
+    const total = state.queue.length, done = state.qIndex;
+    $('#progressFill').style.width = (done / total * 100) + '%';
+    $('#progressText').textContent = `${done + 1} / ${total}`;
+    Speech.speak(s.italian);
+  }
+
+  function renderItalianWords(container, text) {
+    const parts = String(text).split(/(\s+)/);
+    parts.forEach(part => {
+      if (/^\s+$/.test(part)) { container.appendChild(document.createTextNode(part)); return; }
+      const m = part.match(/^([\p{L}']+)(.*)$/u);
+      if (m) {
+        const [, word, punct] = m;
+        const span = document.createElement('span');
+        span.className = 'word'; span.textContent = word;
+        span.addEventListener('click', ev => { ev.stopPropagation(); openDictionary(word); });
+        container.appendChild(span);
+        if (punct) container.appendChild(document.createTextNode(punct));
+      } else { container.appendChild(document.createTextNode(part)); }
+    });
+  }
+
+  function flipCard() {
+    if (state.flipped) return;
+    state.flipped = true;
+    $('#flipCard').classList.add('is-flipped');
+    $('#ratingRow').classList.add('is-visible');
+  }
+
+  async function rateCard(rating) {
+    if (state.busy) return;
+    const s = state.queue[state.qIndex];
+    if (!s) return;
+
+    let patch;
+    if (rating === 'easy') patch = SRS.applyEasy(s);
+    else if (rating === 'medium') patch = SRS.applyMedium(s);
+    else patch = SRS.applyHard(s);
+
+    Object.assign(s, patch);
+    state.session[rating] = (state.session[rating] || 0) + 1;
+
+    resetDailyCounterIfNeeded();
+    state.user.reviewed_today = (state.user.reviewed_today || 0) + 1;
+    bumpStreakIfFirstReviewOfDay();
+
+    setSync('syncing');
+    Promise.all([
+      Store.updateSentence(s.id, patch),
+      Store.saveUser({ streak: state.user.streak, last_review_day: state.user.last_review_day, reviewed_today: state.user.reviewed_today, reviewed_day_key: state.user.reviewed_day_key })
+    ]).then(() => setSync('online')).catch(err => { console.warn(err); setSync('offline'); toast('تعذّر التحديث السحابي', 'warn'); });
+
+    state.qIndex++;
+    if (state.qIndex >= state.queue.length) finishReview();
+    else renderCard();
+  }
+
+  function finishReview() {
+    $('#progressFill').style.width = '100%';
+    $('#progressText').textContent = `${state.queue.length} / ${state.queue.length}`;
+    const { easy, medium, hard } = state.session;
+    const total = easy + medium + hard;
+    $('#summarySub').textContent = `أكملت مراجعة ${total} بطاقة`;
+    $('#summaryStats').innerHTML = `
+      <div class="summary-item total"><span class="v">${total}</span><span class="l">إجمالي البطاقات</span></div>
+      <div class="summary-item total"><span class="v">🔥 ${state.user.streak || 0}</span><span class="l">السلسلة اليومية</span></div>
+      <div class="summary-item easy"><span class="v">${easy}</span><span class="l">سهل</span></div>
+      <div class="summary-item medium"><span class="v">${medium}</span><span class="l">متوسط</span></div>
+      <div class="summary-item hard"><span class="v">${hard}</span><span class="l">صعب</span></div>
+      <div class="summary-item total"><span class="v">${state.user.reviewed_today || 0}</span><span class="l">راجعت اليوم</span></div>`;
+    showView('summary'); renderDashboard();
+  }
+
+  /* =========================================================
+     Dictionary — Dynamic by Type
+     ========================================================= */
+  let currentDictContext = null; // { key, original }
+
+  function normalizeEntry(raw) {
+    if (!raw) return null;
+    if (typeof raw === 'object' && (raw.meaning || raw.type || raw.summary)) {
+      return {
+        word: raw.word || '',
+        lemma: raw.lemma || '',
+        type: raw.type || 'word',
+        meaning: raw.meaning || '',
+        summary: raw.summary || ''
+      };
+    }
+    if (typeof raw === 'string') return { word: '', lemma: '', type: 'word', meaning: raw, summary: '' };
+    return null;
+  }
+
+  async function openDictionary(original) {
+    const key = Store.normalizeKey(original);
+    if (!key) return;
+    currentDictContext = { key, original };
+
+    // اعرض حالة التحميل فورًا
+    renderDictLoading(original);
+    $('#popupOverlay').classList.add('is-open');
+
+    // جرّب الكاش أولًا
+    let entry = normalizeEntry(state.dict[key]);
+
+    // لو لم يكن في الكاش بصيغة جديدة، اطلبه من Firestore
+    if (!entry) {
+      try {
+        const fresh = await Store.getDictionaryEntry(key);
+        const norm = normalizeEntry(fresh);
+        if (norm) { state.dict[key] = Object.assign({ id: key }, norm); entry = norm; }
+      } catch (e) { console.warn('[Dict] fetch:', e); }
+    }
+
+    // لو ما زال فارغًا، اعرض نموذج الإضافة
+    if (!entry) renderDictForm(original, null);
+    else renderDictEntry(entry);
+  }
+
+  function closeDictionary() {
+    $('#popupOverlay').classList.remove('is-open');
+    currentDictContext = null;
+  }
+
+  function renderDictLoading(word) {
+    $('#popupDict').innerHTML = `
+      <div class="dict-popup" data-type="loading">
+        <div class="dict-header">
+          <div class="dict-header-left"><span class="dict-type-icon">⏳</span><span class="dict-type-label">جارٍ البحث</span></div>
+          <button class="btn-icon" data-close>✕</button>
+        </div>
+        <div class="dict-header-main"><h4 class="dict-word" dir="ltr">${escapeHtml(word)}</h4></div>
+        <div class="dict-body"><div class="dict-loading">جارٍ البحث في القاموس…</div></div>
+      </div>`;
+    $('#popupDict').querySelectorAll('[data-close]').forEach(b => b.addEventListener('click', closeDictionary));
+  }
+
+  function renderDictEntry(entry) {
+    const type = entry.type || 'word';
+    const meta = {
+      verb:        { label: 'فعل',    icon: '⚡', wordClass: '' },
+      preposition: { label: 'حرف جر', icon: '🔗', wordClass: '' },
+      article:     { label: 'أداة',   icon: '📎', wordClass: '' },
+      word:        { label: 'كلمة',   icon: '📖', wordClass: '' }
+    }[type] || { label: 'كلمة', icon: '📖', wordClass: '' };
+
+    let summaryHtml = '';
+    if (entry.summary) {
+      if (type === 'verb') {
+        summaryHtml = `<div class="dict-summary dict-summary-verb"><div class="summary-label">📝 التصريفات (المضارع)</div><div class="summary-text">${escapeHtml(entry.summary)}</div></div>`;
+      } else if (type === 'preposition' || type === 'article') {
+        summaryHtml = `<div class="dict-summary dict-summary-usage"><div class="summary-label">💡 القواعد والاستخدام</div><div class="summary-text">${escapeHtml(entry.summary)}</div></div>`;
+      } else {
+        summaryHtml = `<div class="dict-summary dict-summary-note"><div class="summary-label">📝 ملاحظات</div><div class="summary-text">${escapeHtml(entry.summary)}</div></div>`;
+      }
+    }
+
+    const lemmaHtml = entry.lemma && entry.lemma !== entry.word
+      ? `<div class="dict-lemma" dir="ltr">${escapeHtml(entry.lemma)}</div>`
+      : '';
+
+    $('#popupDict').innerHTML = `
+      <div class="dict-popup" data-type="${type}">
+        <div class="dict-header">
+          <div class="dict-header-left">
+            <span class="dict-type-icon">${meta.icon}</span>
+            <span class="dict-type-label">${meta.label}</span>
+          </div>
+          <button class="btn-icon" data-close>✕</button>
+        </div>
+        <div class="dict-header-main">
+          <h4 class="dict-word" dir="ltr">${escapeHtml(entry.word || currentDictContext?.original || '')}</h4>
+          ${lemmaHtml}
+        </div>
+        <div class="dict-body">
+          <div class="dict-meaning">${escapeHtml(entry.meaning || '— لا يوجد معنى —')}</div>
+          ${summaryHtml}
+          <button class="btn-dict-edit" data-edit>✏️ تعديل البيانات</button>
+        </div>
+      </div>`;
+
+    $('#popupDict').querySelectorAll('[data-close]').forEach(b => b.addEventListener('click', closeDictionary));
+    const editBtn = $('#popupDict').querySelector('[data-edit]');
+    if (editBtn) editBtn.addEventListener('click', () => {
+      const orig = currentDictContext ? currentDictContext.original : entry.word;
+      renderDictForm(orig, entry);
+    });
+  }
+
+  function renderDictForm(original, existing) {
+    const isEdit = !!existing;
+    const e = existing || { word: original, lemma: '', type: 'word', meaning: '', summary: '' };
+
+    $('#popupDict').innerHTML = `
+      <div class="dict-popup" data-type="form">
+        <div class="dict-header">
+          <div class="dict-header-left">
+            <span class="dict-type-icon">${isEdit ? '✏️' : '➕'}</span>
+            <span class="dict-type-label">${isEdit ? 'تعديل الكلمة' : 'كلمة جديدة'}</span>
+          </div>
+          <button class="btn-icon" data-close>✕</button>
+        </div>
+        <div class="dict-header-main">
+          <h4 class="dict-word" dir="ltr">${escapeHtml(original)}</h4>
+        </div>
+        <div class="dict-body">
+          <label class="dict-field-label">نوع الكلمة</label>
+          <select class="input" id="dictType">
+            <option value="word" ${e.type === 'word' ? 'selected' : ''}>كلمة عادية</option>
+            <option value="verb" ${e.type === 'verb' ? 'selected' : ''}>فعل (Verb)</option>
+            <option value="preposition" ${e.type === 'preposition' ? 'selected' : ''}>حرف جر (Preposition)</option>
+            <option value="article" ${e.type === 'article' ? 'selected' : ''}>أداة (Article)</option>
+          </select>
+
+          <label class="dict-field-label">المصدر / الجذر (اختياري)</label>
+          <input class="input" id="dictLemma" dir="ltr" placeholder="e.g. mangiare" value="${escapeHtml(e.lemma || '')}" />
+
+          <label class="dict-field-label">المعنى</label>
+          <input class="input" id="dictMeaning" placeholder="المعنى بالعربية" value="${escapeHtml(e.meaning || '')}" />
+
+          <label class="dict-field-label">ملخص / تصريفات / قواعد الاستخدام</label>
+          <textarea class="input" id="dictSummary" rows="4" placeholder="مثال للفعل: io mangio, tu mangi, ... — مثال لحرف الجر: يُستخدم لل...">${escapeHtml(e.summary || '')}</textarea>
+
+          <button class="btn btn-secondary" id="dictSave" style="margin-top:8px;">💾 حفظ في السحابة</button>
+        </div>
+      </div>`;
+
+    $('#popupDict').querySelectorAll('[data-close]').forEach(b => b.addEventListener('click', closeDictionary));
+    $('#dictSave').addEventListener('click', saveDictForm);
+  }
+
+  async function saveDictForm() {
+    if (!currentDictContext) return;
+    const type = $('#dictType').value;
+    const lemma = $('#dictLemma').value.trim();
+    const meaning = $('#dictMeaning').value.trim();
+    const summary = $('#dictSummary').value.trim();
+
+    if (!meaning) { toast('أدخل المعنى على الأقل', 'err'); return; }
+
+    const { key, original } = currentDictContext;
+    const entry = { word: original, lemma: lemma || original, type, meaning, summary };
+
+    setSync('syncing');
+    try {
+      await Store.saveDictionaryEntry(key, entry);
+      state.dict[key] = Object.assign({ id: key }, entry);
+      setSync('online');
+      toast('تم الحفظ في السحابة ✓', 'ok');
+      renderDictEntry(entry);
+    } catch (err) {
+      console.error(err);
+      setSync('offline');
+      toast('فشل الحفظ', 'err');
+    }
+  }
+
+  /* =========================================================
+     Lists View
+     ========================================================= */
+  function openList(mode) {
+    state.listMode = mode;
+    const titles = { today: 'المراجعة اليومية', mistakes: 'الجمل الصعبة', frozen: 'المجمّدة', all: 'كل الجمل' };
+    $('#listTitle').textContent = titles[mode] || 'القائمة';
+
+    const actions = $('#listActions'); actions.innerHTML = '';
+    if (mode === 'all' && state.sentences.length > 0) {
+      const copyBtn = document.createElement('button');
+      copyBtn.className = 'btn btn-secondary';
+      copyBtn.textContent = '📋 نسخ الكل';
+      copyBtn.addEventListener('click', copyAll);
+
+      const dlBtn = document.createElement('button');
+      dlBtn.className = 'btn btn-secondary';
+      dlBtn.textContent = '⬇️ تحميل .txt';
+      dlBtn.addEventListener('click', downloadAll);
+
+      actions.appendChild(copyBtn); actions.appendChild(dlBtn);
+    }
+    renderList(); showView('list');
+  }
+
+  function renderList() {
+    const mode = state.listMode, wrap = $('#listContent');
+    let items = [];
+    if (mode === 'today') items = dueToday().slice();
+    if (mode === 'mistakes') items = mistakesList().slice();
+    if (mode === 'frozen') items = frozenList().slice();
+    if (mode === 'all') items = state.sentences.slice();
+
+    if (items.length === 0) {
+      const msgs = { today: 'لا توجد بطاقات مستحقة اليوم', mistakes: 'لا توجد جمل صعبة 🎉', frozen: 'لا توجد جمل مجمّدة', all: 'لم تُضف أي جملة بعد' };
+      wrap.innerHTML = `<div class="empty-state"><span class="em">📭</span>${msgs[mode]}</div>`;
+      return;
+    }
+
+    if (mode === 'all') items.sort((a, b) => (b.created_at || 0) - (a.created_at || 0));
+    else if (mode === 'today') items.sort((a, b) => (a.next_review || 0) - (b.next_review || 0));
+
+    wrap.innerHTML = '';
+    items.forEach(s => wrap.appendChild(buildListItem(s, mode)));
+  }
+
+  function buildListItem(s, mode) {
+    const el = document.createElement('div');
+    el.className = 'list-item';
+    el.innerHTML = `
+      <div class="list-item-it">${escapeHtml(s.italian)}</div>
+      <div class="list-item-ar">${escapeHtml(s.arabic)}</div>
+      <div class="list-item-meta">
+        ${s.is_frozen ? '<span class="badge frozen">❄️ مجمّدة</span>' : ''}
+        ${s.in_mistake_bank ? '<span class="badge hard">⚠️ صعبة</span>' : ''}
+        ${s.easy_streak ? `<span class="badge easy">سهل ×${s.easy_streak}</span>` : ''}
+        ${s.medium_streak ? `<span class="badge medium">متوسط ×${s.medium_streak}</span>` : ''}
+        <span class="badge">${fmtDate(s.next_review)}</span>
+      </div>
+      <div class="list-item-actions"></div>`;
+
+    const actions = el.querySelector('.list-item-actions');
+    const mk = (label, cls, fn) => {
+      const b = document.createElement('button');
+      b.className = 'mini-btn ' + (cls || '');
+      b.textContent = label;
+      b.addEventListener('click', fn);
+      return b;
+    };
+
+    if (mode === 'mistakes') {
+      actions.appendChild(mk('✓ صح', 'ok', () => markCorrect(s.id)));
+      actions.appendChild(mk('✗ خطأ', 'no', () => markWrong(s.id)));
+      actions.appendChild(mk('❄️ تجميد', 'freeze', () => freezeSentence(s.id)));
+    } else if (mode === 'frozen') {
+      actions.appendChild(mk('♻️ إلغاء التجميد', 'freeze', () => unfreezeSentence(s.id)));
+      actions.appendChild(mk('🔊 نطق', '', () => Speech.speak(s.italian)));
+      actions.appendChild(mk('🗑️ حذف', 'danger', () => removeSentence(s.id)));
+    } else if (mode === 'all') {
+      actions.appendChild(mk('❄️ تجميد', 'freeze', () => freezeSentence(s.id)));
+      actions.appendChild(mk('🔊 نطق', '', () => Speech.speak(s.italian)));
+      actions.appendChild(mk('🗑️ حذف', 'danger', () => removeSentence(s.id)));
+    } else if (mode === 'today') {
+      actions.appendChild(mk('🔊 نطق', '', () => Speech.speak(s.italian)));
+      actions.appendChild(mk('❄️ تجميد', 'freeze', () => freezeSentence(s.id)));
+    }
+    return el;
+  }
+
+  function fmtDate(ts) {
+    if (!ts) return '—';
+    const d = new Date(ts);
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const target = new Date(d); target.setHours(0, 0, 0, 0);
+    const diff = Math.round((target - today) / 86400000);
+    if (diff === 0) return 'اليوم';
+    if (diff === -1) return 'أمس';
+    if (diff === 1) return 'غدًا';
+    if (diff > 1 && diff <= 7) return `بعد ${diff} أيام`;
+    if (diff < 0) return `متأخرة ${Math.abs(diff)} يوم`;
+    return `${d.getDate()}/${d.getMonth() + 1}`;
+  }
+
+  /* =========================================================
+     List Actions
+     ========================================================= */
+  async function updateAndRefresh(id, patch) {
+    const s = state.sentences.find(x => x.id === id);
+    if (!s) return;
+    Object.assign(s, patch);
+    setSync('syncing');
+    try { await Store.updateSentence(id, patch); setSync('online'); }
+    catch (err) { console.error(err); setSync('offline'); toast('تعذّر التحديث السحابي', 'err'); }
+    renderList(); renderDashboard();
+  }
+  async function markCorrect(id) {
+    const s = state.sentences.find(x => x.id === id); if (!s) return;
+    toast('خرجت من قائمة الصعبة ✓', 'ok');
+    await updateAndRefresh(id, SRS.applyCorrectFromMistakes(s));
+  }
+  async function markWrong(id) {
+    const s = state.sentences.find(x => x.id === id); if (!s) return;
+    toast('ستبقى في القائمة الصعبة');
+    await updateAndRefresh(id, SRS.applyWrongFromMistakes(s));
+  }
+  async function freezeSentence(id) { await updateAndRefresh(id, { is_frozen: true }); toast('تم التجميد ❄️'); }
+  async function unfreezeSentence(id) { await updateAndRefresh(id, { is_frozen: false }); toast('تم إلغاء التجميد ♻️', 'ok'); }
+  async function removeSentence(id) {
+    if (!confirm('حذف الجملة نهائيًا من Firebase؟')) return;
+    setSync('syncing');
+    try { await Store.deleteSentence(id); state.sentences = state.sentences.filter(x => x.id !== id); setSync('online'); toast('تم الحذف'); }
+    catch (err) { console.error(err); setSync('offline'); toast('تعذّر الحذف', 'err'); }
+    renderList(); renderDashboard();
+  }
+
+  /* =========================================================
+     Copy / Download
+     ========================================================= */
+  function serializeAll() {
+    return state.sentences.slice().sort((a, b) => (b.created_at || 0) - (a.created_at || 0)).map(s => `${s.italian}\t${s.arabic}`).join('\n');
+  }
+  async function copyAll() {
+    const text = serializeAll();
+    try { await navigator.clipboard.writeText(text); toast('تم النسخ ✓', 'ok'); }
+    catch (_) {
+      const ta = document.createElement('textarea'); ta.value = text;
+      document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); toast('تم النسخ ✓', 'ok'); } catch (e) { toast('فشل النسخ', 'err'); }
+      ta.remove();
+    }
+  }
+  function downloadAll() {
+    const text = serializeAll();
+    const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const t = new Date();
+    const key = `${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`;
+    a.href = url; a.download = `imparo-backup-${key}.txt`;
+    document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
+    toast('تم التحميل ✓', 'ok');
+  }
+
+  /* =========================================================
+     Events
+     ========================================================= */
+  function bindEvents() {
+    $('#btnStartReview').addEventListener('click', startReview);
+    $('#btnQuickAdd').addEventListener('click', quickAdd);
+    $('#inputArabic').addEventListener('keydown', e => { if (e.key === 'Enter') quickAdd(); });
+
+    $$('.list-btn').forEach(btn => btn.addEventListener('click', () => openList(btn.dataset.list)));
+
+    $('#btnExitReview').addEventListener('click', () => {
+      if (confirm('إنهاء الجلسة؟ ما تم تقييمه محفوظ.')) { showView('dashboard'); renderDashboard(); }
+    });
+    $('#flipCard').addEventListener('click', flipCard);
+    $('#btnSpeak').addEventListener('click', e => {
+      e.stopPropagation();
+      const s = state.queue[state.qIndex]; if (s) Speech.speak(s.italian);
+    });
+    $$('.btn-rating').forEach(b => b.addEventListener('click', e => { e.stopPropagation(); rateCard(b.dataset.rating); }));
+
+    $('#btnBackHome').addEventListener('click', () => { showView('dashboard'); renderDashboard(); });
+    $('#btnBackList').addEventListener('click', () => { showView('dashboard'); renderDashboard(); });
+
+    $('#popupOverlay').addEventListener('click', e => { if (e.target === $('#popupOverlay')) closeDictionary(); });
+
+    setInterval(() => { if ($('#view-dashboard').classList.contains('is-active')) renderDashboard(); }, 60 * 1000);
+
+    const updateOnline = () => setSync(navigator.onLine ? 'online' : 'offline');
+    window.addEventListener('online', updateOnline);
+    window.addEventListener('offline', updateOnline);
+    updateOnline();
+
+    window.addEventListener('beforeunload', () => Speech.cancel());
+  }
+
+  /* =========================================================
+     Boot
+     ========================================================= */
+  function showError(msg) {
+    console.error('[Imparo] showError:', msg);
+    $('#bootScreen').hidden = true;
+    $('#errorScreen').hidden = false;
+    $('#errorMessage').textContent = msg || 'خطأ غير معروف';
+  }
+  function setBootText(msg) { const el = $('#bootText'); if (el) el.textContent = msg; }
+
+  async function boot() {
+    try {
+      await Store.init(setBootText);
+      Speech.setFallbackHandler(msg => toast(msg, 'warn'));
+
+      setBootText('جارٍ تحميل الجمل…');
+      const [user, sentences, dict] = await Promise.all([
+        Store.loadUser(),
+        Store.loadSentences(),
+        Store.loadDictionary()
+      ]);
+
+      state.user = user; state.sentences = sentences; state.dict = dict;
+      resetDailyCounterIfNeeded();
+      bindEvents();
+      renderDashboard();
+
+      $('#bootScreen').hidden = true;
+      $('#appRoot').hidden = false;
+      setSync('online');
+
+      console.info('[Imparo] جاهز. USER_ID =', Store.getUid(), '| الجمل:', sentences.length);
+    } catch (err) {
+      console.error('[Imparo] فشل التهيئة:', err);
+      const msg = err && err.message ? err.message : (err && err.code ? `خطأ (${err.code})` : 'خطأ غير معروف — راجع Console');
+      showError(msg);
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', boot);
+})();
+</script>
+</body>
+</html>
