@@ -1,0 +1,1366 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<meta name="theme-color" content="#2d7a68" />
+<title>Imparo Ingester v2 — تغذية ذكية</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='45' fill='%232d7a68'/><text x='50' y='68' font-size='60' text-anchor='middle' fill='white' font-family='Georgia'>I</text></svg>">
+<style>
+/* =========================================================
+   Imparo Ingester v2 — Styles
+   ========================================================= */
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+[hidden] { display: none !important; }
+
+:root {
+  --bg: #f7f5f0;
+  --surface: #ffffff;
+  --surface-2: #fbfaf7;
+  --primary: #2d7a68;
+  --primary-dark: #1f5a4c;
+  --primary-soft: #e4f1ed;
+  --success: #4caf7d;
+  --success-soft: #e6f5ee;
+  --warn: #eba827;
+  --warn-soft: #fdf3e0;
+  --danger: #e76f51;
+  --danger-soft: #fbe8e2;
+  --info: #4a6ee0;
+  --info-soft: #e0ecff;
+  --text: #23302c;
+  --text-soft: #6b7a76;
+  --border: #ece8e1;
+  --shadow-sm: 0 1px 3px rgba(30,45,40,.06);
+  --shadow: 0 4px 14px rgba(30,45,40,.08);
+  --shadow-lg: 0 10px 30px rgba(30,45,40,.14);
+  --radius-sm: 12px;
+  --radius: 16px;
+  --radius-lg: 22px;
+}
+
+html, body {
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Kufi Arabic", "Tahoma", sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior-y: none;
+}
+body { min-height: 100vh; }
+
+.app { max-width: 720px; margin: 0 auto; min-height: 100vh; display: flex; flex-direction: column; background: var(--bg); }
+
+/* Header */
+.app-header {
+  position: sticky; top: 0; z-index: 20;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 10px; padding: 12px 16px;
+  background: rgba(247,245,240,.92);
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+}
+.brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.brand-dot { width: 12px; height: 12px; border-radius: 50%; background: var(--primary); box-shadow: 0 0 0 4px var(--primary-soft); flex-shrink: 0; }
+.brand h1 { font-size: 17px; font-weight: 800; color: var(--primary-dark); white-space: nowrap; }
+.brand .subtitle { font-size: 11px; font-weight: 700; color: var(--text-soft); display: block; margin-top: -2px; letter-spacing: .5px; }
+.btn-copy-prompt {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 14px; background: var(--primary); color: #fff;
+  border: none; border-radius: 999px;
+  font-family: inherit; font-size: 12.5px; font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(45,122,104,.25);
+  transition: transform .12s ease, background .15s ease;
+  white-space: nowrap;
+}
+.btn-copy-prompt:active { transform: scale(.96); }
+.btn-copy-prompt.copied { background: var(--success); box-shadow: 0 4px 12px rgba(76,175,125,.25); }
+
+/* Main */
+.app-main { flex: 1; padding: 16px; padding-bottom: 40px; display: flex; flex-direction: column; gap: 14px; }
+
+/* Status bar */
+.status-bar {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 14px; background: var(--surface);
+  border-radius: var(--radius-sm); border: 1px solid var(--border);
+  font-size: 13px; color: var(--text-soft); box-shadow: var(--shadow-sm);
+}
+.sync-dot { width: 9px; height: 9px; border-radius: 50%; background: #b9c7c3; transition: background .2s ease; flex-shrink: 0; }
+.sync-dot.online { background: var(--success); box-shadow: 0 0 0 3px rgba(76,175,125,.15); }
+.sync-dot.syncing { background: var(--warn); box-shadow: 0 0 0 3px rgba(235,168,39,.15); animation: pulse 1s infinite; }
+.sync-dot.offline { background: var(--danger); }
+@keyframes pulse { 0%,100%{transform:scale(1);} 50%{transform:scale(1.2);} }
+
+/* Cards */
+.card { background: var(--surface); border-radius: var(--radius); padding: 16px; box-shadow: var(--shadow-sm); border: 1px solid var(--border); }
+.section-title { font-size: 14px; font-weight: 800; color: var(--text); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+
+/* Instructions */
+.instructions { background: linear-gradient(135deg, #ffffff, #f1faf6); border-color: #d5ebe4; }
+.instructions h3 { font-size: 13.5px; color: var(--primary-dark); margin-bottom: 10px; font-weight: 800; }
+.instructions ol { padding-inline-start: 20px; color: var(--text-soft); font-size: 13.5px; line-height: 1.9; }
+.instructions li::marker { color: var(--primary); font-weight: 800; }
+
+/* JSON Input */
+.json-input {
+  width: 100%; min-height: 200px; padding: 14px;
+  background: var(--surface-2); border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-family: "Consolas", "Monaco", "Courier New", monospace;
+  font-size: 13px; line-height: 1.55; color: var(--text);
+  outline: none; resize: vertical;
+  transition: border-color .15s ease, background .15s ease;
+  direction: ltr; text-align: left;
+}
+.json-input:focus { border-color: var(--primary); background: #fff; }
+.json-input.valid { border-color: var(--success); }
+.json-input.invalid { border-color: var(--danger); }
+
+.input-meta {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 8px; margin-top: 8px; margin-bottom: 12px;
+  font-size: 12.5px; color: var(--text-soft); min-height: 18px;
+}
+.input-status.ok { color: var(--success); font-weight: 700; }
+.input-status.err { color: var(--danger); font-weight: 700; }
+.input-status.warn { color: var(--warn); font-weight: 700; }
+.input-meta-actions { display: flex; gap: 6px; }
+
+.mini-btn {
+  border: 1px solid var(--border); background: var(--surface-2);
+  color: var(--text-soft); padding: 5px 10px; border-radius: 8px;
+  font-family: inherit; font-size: 11.5px; font-weight: 700;
+  cursor: pointer; transition: background .15s ease;
+}
+.mini-btn:hover { background: var(--border); }
+
+/* Buttons */
+.btn {
+  border: none; border-radius: var(--radius);
+  padding: 14px 18px; font-family: inherit; font-size: 15px; font-weight: 800;
+  cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  width: 100%;
+  transition: transform .12s ease, background .2s ease, box-shadow .2s ease;
+}
+.btn:active:not(:disabled) { transform: scale(.98); }
+.btn:disabled { opacity: .55; cursor: not-allowed; }
+.btn-primary { background: var(--primary); color: #fff; box-shadow: 0 6px 16px rgba(45,122,104,.28); }
+.btn-primary:hover:not(:disabled) { background: var(--primary-dark); }
+.btn-primary:disabled { background: #b9c7c3; box-shadow: none; }
+.btn-ghost { background: var(--surface-2); color: var(--text); box-shadow: none; border: 1px solid var(--border); }
+.btn-ghost:hover:not(:disabled) { background: var(--border); }
+
+.btn.loading::after {
+  content: '';
+  width: 14px; height: 14px;
+  border: 2px solid rgba(255,255,255,.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+  margin-inline-start: 4px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Preview Card */
+.preview-card { background: linear-gradient(135deg, #ffffff, #f8fbfe); border-color: #d0e2f0; }
+.preview-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+.preview-block {
+  background: var(--surface); border-radius: var(--radius-sm);
+  padding: 12px; border: 1px solid var(--border);
+}
+.preview-block-title {
+  font-size: 12px; font-weight: 800; color: var(--text-soft);
+  margin-bottom: 8px; display: flex; align-items: center; gap: 6px;
+}
+.preview-row {
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 13px; padding: 3px 0;
+}
+.preview-row .label { color: var(--text-soft); }
+.preview-row .val { font-weight: 800; }
+.preview-row .val.success { color: var(--success); }
+.preview-row .val.added { color: var(--info); }
+.preview-row .val.skipped { color: var(--warn); }
+.preview-row .val.error { color: var(--danger); }
+
+.preview-actions { display: flex; gap: 8px; }
+
+/* Results Card */
+.results-card { background: linear-gradient(135deg, #ffffff, #f1faf6); border-color: #c7e8db; }
+.results-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 12px; }
+.result-item {
+  padding: 12px; background: var(--surface);
+  border-radius: var(--radius-sm); border: 1px solid var(--border);
+  text-align: center;
+}
+.result-item .v {
+  font-size: 22px; font-weight: 800; color: var(--primary-dark);
+  line-height: 1.2; display: block;
+}
+.result-item .l { font-size: 11.5px; color: var(--text-soft); margin-top: 2px; }
+.result-item.success .v { color: var(--success); }
+.result-item.added .v { color: var(--info); }
+.result-item.skipped .v { color: var(--warn); }
+.result-item.error .v { color: var(--danger); }
+
+/* Details */
+.details-box {
+  margin-top: 12px; border: 1px solid var(--border);
+  border-radius: var(--radius-sm); overflow: hidden;
+  background: var(--surface);
+}
+.details-summary {
+  padding: 10px 14px; cursor: pointer;
+  font-size: 13px; font-weight: 700; color: var(--primary-dark);
+  background: var(--surface-2);
+  display: flex; align-items: center; gap: 6px;
+  user-select: none;
+}
+.details-summary::marker { display: none; }
+.details-summary::before {
+  content: '▶'; font-size: 10px;
+  transition: transform .2s ease;
+  display: inline-block;
+}
+details[open] .details-summary::before { transform: rotate(90deg); }
+
+.details-content {
+  padding: 10px 14px; max-height: 300px; overflow-y: auto;
+  font-size: 12.5px;
+}
+.details-group { margin-bottom: 12px; }
+.details-group:last-child { margin-bottom: 0; }
+.details-group h5 {
+  font-size: 12px; font-weight: 800; color: var(--text-soft);
+  margin-bottom: 6px; padding-bottom: 4px;
+  border-bottom: 1px solid var(--border);
+}
+.detail-item {
+  padding: 6px 8px; margin-bottom: 4px;
+  background: var(--surface-2); border-radius: 8px;
+  display: flex; justify-content: space-between; gap: 8px;
+  font-size: 12px;
+}
+.detail-item .it { direction: ltr; text-align: left; font-family: "Georgia", serif; font-weight: 600; flex: 1; }
+.detail-item .ar { color: var(--text-soft); text-align: left; }
+.detail-item .reason {
+  font-size: 10.5px; padding: 1px 6px; border-radius: 4px;
+  background: var(--warn-soft); color: var(--warn);
+  white-space: nowrap;
+}
+
+/* History */
+.history-list { display: flex; flex-direction: column; gap: 8px; }
+.history-item {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 10px 12px; background: var(--surface-2);
+  border-radius: var(--radius-sm); border: 1px solid var(--border);
+  font-size: 12.5px;
+}
+.history-item-icon {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: var(--success-soft); color: var(--success);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px; flex-shrink: 0;
+}
+.history-item-content { flex: 1; min-width: 0; }
+.history-item-title { font-weight: 700; color: var(--text); margin-bottom: 2px; }
+.history-item-details { font-size: 11px; color: var(--text-soft); line-height: 1.6; }
+.history-item-time { font-size: 10.5px; color: var(--text-soft); }
+
+.empty-state { text-align: center; color: var(--text-soft); font-size: 13px; padding: 24px 12px; }
+
+/* Toast */
+.toast {
+  position: fixed; bottom: 24px; left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: #23302c; color: #fff;
+  padding: 11px 20px; border-radius: 999px;
+  font-size: 13.5px; font-weight: 700; z-index: 200;
+  opacity: 0; pointer-events: none;
+  transition: opacity .25s ease, transform .25s ease;
+  max-width: 88vw; text-align: center;
+  box-shadow: var(--shadow-lg);
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.toast.ok { background: var(--success); }
+.toast.err { background: var(--danger); }
+.toast.warn { background: var(--warn); color: #3a2c05; }
+
+/* Prompt Modal */
+.prompt-overlay {
+  position: fixed; inset: 0; z-index: 100;
+  background: rgba(20,30,28,.55);
+  backdrop-filter: blur(4px);
+  display: none; align-items: center; justify-content: center;
+  padding: 16px;
+}
+.prompt-overlay.is-open { display: flex; }
+.prompt-modal {
+  background: var(--surface); border-radius: var(--radius-lg);
+  width: 100%; max-width: 560px; max-height: 85vh;
+  display: flex; flex-direction: column;
+  box-shadow: var(--shadow-lg);
+  animation: slideUp .25s ease;
+}
+@keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: none; opacity: 1; } }
+.prompt-modal-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 18px; border-bottom: 1px solid var(--border);
+}
+.prompt-modal-header h3 { font-size: 15px; font-weight: 800; color: var(--primary-dark); }
+.prompt-modal-body { flex: 1; overflow-y: auto; padding: 16px 18px; }
+.prompt-content {
+  background: var(--surface-2); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 14px;
+  font-family: "Consolas", "Monaco", "Courier New", monospace;
+  font-size: 12px; line-height: 1.65;
+  white-space: pre-wrap; color: var(--text);
+  direction: rtl;
+}
+.prompt-modal-footer {
+  padding: 12px 18px; border-top: 1px solid var(--border);
+  display: flex; gap: 8px;
+}
+.prompt-modal-footer .btn { flex: 1; padding: 11px 14px; font-size: 13.5px; }
+.btn-icon {
+  background: transparent; border: none;
+  width: 34px; height: 34px; border-radius: 50%;
+  font-size: 16px; color: var(--text); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+.btn-icon:hover { background: rgba(0,0,0,.06); }
+
+@media (max-width: 480px) {
+  .app-header { padding: 10px 14px; }
+  .brand h1 { font-size: 16px; }
+  .btn-copy-prompt { padding: 7px 12px; font-size: 12px; }
+  .preview-grid, .results-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <header class="app-header">
+    <div class="brand">
+      <span class="brand-dot"></span>
+      <div>
+        <h1>Imparo <span class="subtitle">INGESTER v2</span></h1>
+      </div>
+    </div>
+    <button class="btn-copy-prompt" id="btnCopyPrompt">📋 نسخ البرومبت</button>
+  </header>
+
+  <main class="app-main">
+    <div class="status-bar">
+      <span class="sync-dot" id="syncDot"></span>
+      <span id="statusText">جارٍ الاتصال بقاعدة البيانات…</span>
+    </div>
+
+    <div class="card instructions">
+      <h3>🎯 كيف يعمل التطبيق؟</h3>
+      <ol>
+        <li>اضغط <strong>"نسخ البرومبت"</strong> أعلى الصفحة.</li>
+        <li>الصقه في ChatGPT/Claude مع الجمل الإيطالية.</li>
+        <li>انسخ ناتج JSON من الذكاء الاصطناعي.</li>
+        <li>الصقه في المربع أدناه → اضغط <strong>"تحليل ومعاينة"</strong>.</li>
+        <li>راجع التقرير → اضغط <strong>"تأكيد الرفع"</strong>.</li>
+      </ol>
+    </div>
+
+    <!-- JSON Input -->
+    <div class="card">
+      <h3 class="section-title">📥 نص JSON من الذكاء الاصطناعي</h3>
+      <textarea id="jsonInput" class="json-input" placeholder='الصق هنا ناتج JSON…' spellcheck="false"></textarea>
+      <div class="input-meta">
+        <span id="inputStatus" class="input-status">بانتظار النص…</span>
+        <div class="input-meta-actions">
+          <button class="mini-btn" id="btnSample">📋 مثال</button>
+          <button class="mini-btn" id="btnClear">🗑️ مسح</button>
+        </div>
+      </div>
+      <button class="btn btn-primary" id="btnAnalyze" disabled>🔍 تحليل ومعاينة قبل الرفع</button>
+    </div>
+
+    <!-- Preview Card -->
+    <div class="card preview-card" id="previewCard" hidden>
+      <h3 class="section-title">🔍 معاينة قبل الرفع</h3>
+
+      <div class="preview-grid">
+        <div class="preview-block">
+          <div class="preview-block-title">📅 الجمل</div>
+          <div class="preview-row"><span class="label">جديدة</span><span class="val success" id="prevSentNew">0</span></div>
+          <div class="preview-row"><span class="label">مكررة (ستُتجاهل)</span><span class="val skipped" id="prevSentDup">0</span></div>
+        </div>
+        <div class="preview-block">
+          <div class="preview-block-title">📖 القاموس</div>
+          <div class="preview-row"><span class="label">كلمات جديدة</span><span class="val success" id="prevDictNew">0</span></div>
+          <div class="preview-row"><span class="label">+ معنى إضافي</span><span class="val added" id="prevDictAdded">0</span></div>
+          <div class="preview-row"><span class="label">مكررة (نفس المعنى)</span><span class="val skipped" id="prevDictSame">0</span></div>
+        </div>
+      </div>
+
+      <div class="preview-actions">
+        <button class="btn btn-ghost" id="btnCancelPreview" style="flex:1;">إلغاء</button>
+        <button class="btn btn-primary" id="btnConfirmUpload" style="flex:2;">🚀 تأكيد الرفع إلى السحابة</button>
+      </div>
+    </div>
+
+    <!-- Results Card -->
+    <div class="card results-card" id="resultsCard" hidden>
+      <h3 class="section-title">✅ نتيجة آخر عملية</h3>
+      <div class="results-grid" id="resultsGrid"></div>
+      <details class="details-box" id="resultsDetails">
+        <summary class="details-summary">عرض التفاصيل</summary>
+        <div class="details-content" id="resultsDetailsContent"></div>
+      </details>
+    </div>
+
+    <!-- History -->
+    <div class="card" id="historyCard" hidden>
+      <h3 class="section-title">📜 سجل آخر العمليات</h3>
+      <div class="history-list" id="historyList"></div>
+    </div>
+  </main>
+</div>
+
+<!-- Prompt Modal -->
+<div class="prompt-overlay" id="promptOverlay">
+  <div class="prompt-modal">
+    <div class="prompt-modal-header">
+      <h3>📝 البرومبت المخصص للذكاء الاصطناعي</h3>
+      <button class="btn-icon" id="btnClosePrompt">✕</button>
+    </div>
+    <div class="prompt-modal-body">
+      <div class="prompt-content" id="promptContent"></div>
+    </div>
+    <div class="prompt-modal-footer">
+      <button class="btn btn-primary" id="btnCopyFromModal">📋 نسخ</button>
+      <button class="btn btn-ghost" id="btnCloseModal">إغلاق</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+<script>
+/* =========================================================
+   Imparo Ingester v2 — Smart merge + Deduplication
+   ========================================================= */
+(function () {
+  'use strict';
+
+  /* ============ CONFIG ============ */
+  const FIREBASE_CONFIG = {
+    apiKey:            "AIzaSyA0Ca2fqu7Pw80sKhXVuqaz5h3UIaau_LQ",
+    authDomain:        "imparo-53eea.firebaseapp.com",
+    projectId:         "imparo-53eea",
+    storageBucket:     "imparo-53eea.firebasestorage.app",
+    messagingSenderId: "558351996816",
+    appId:             "1:558351996816:web:6698c08e636482e2908515"
+  };
+  // ✅ يجب مطابقة USER_ID في تطبيق Imparo الرئيسي
+  const USER_ID = "ahmed_imparo_53eea_x7k9m2p4q8w3_admin";
+
+  const BATCH_LIMIT = 500;
+  const HISTORY_KEY = 'imparo_ingester_history_v2';
+  const MEANING_SEPARATOR = ' • ';
+  const VALID_TYPES = ['verb', 'preposition', 'article', 'word'];
+
+  /* ============ AI PROMPT ============ */
+  const AI_PROMPT = `أنت مدرّس لغة إيطالية خبير ومتخصص في تعليم المفردات والقواعد.
+
+سأعطيك جملًا أو نصوصًا إيطالية. أريد منك القيام بما يلي:
+
+1. ترجمة كل جملة إلى العربية بدقة ووضوح.
+2. استخراج الكلمات المهمة فقط (خاصة الأفعال، حروف الجر، أدوات التعريف، والكلمات المفيدة للمتعلم).
+3. تصنيف كل كلمة حسب نوعها:
+   - "verb" للأفعال
+   - "preposition" لحروف الجر
+   - "article" لأدوات التعريف/التنكير/الإشارة
+   - "word" لأي كلمة أخرى
+4. للأفعال: اذكر المصدر (lemma) وتصريفات المضارع الكاملة في summary.
+   لحروف الجر والأدوات: اذكر قواعد الاستخدام الأساسية في summary.
+   للكلمات العادية: اذكر ملاحظات مفيدة إن وُجدت.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+أخرج النتيجة بصيغة JSON صالحة فقط، بدون أي نص قبلها أو بعدها، بهذا الشكل بالضبط:
+
+{
+  "sentences": [
+    {
+      "italian": "الجملة الإيطالية الأصلية",
+      "arabic": "الترجمة العربية"
+    }
+  ],
+  "dictionary": [
+    {
+      "word": "الكلمة كما ظهرت في الجملة",
+      "lemma": "المصدر أو الجذر (مثل mangiare للفعل mangio، أو الكلمة نفسها إن لم يكن لها جذر)",
+      "type": "verb",
+      "meaning": "المعنى بالعربية",
+      "summary": "ملخص مفيد: للأفعال التصريفات، للحروف والأدوات القواعد"
+    }
+  ]
+}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+قواعد صارمة:
+✓ type واحد فقط من: verb / preposition / article / word
+✓ لا تكرر الكلمة نفسها في dictionary (كل كلمة مرة واحدة فقط)
+✓ للفعل اكتب تصريفاته الكاملة في summary
+✓ لا تُضف أي كلمة إلا إذا كانت مفيدة فعلًا للمتعلم
+✓ لا تخرج أي شرح أو نص خارج الـ JSON
+✓ تأكد أن الـ JSON صالح 100% وقابل للتحليل`;
+
+  /* ============ State ============ */
+  const state = {
+    db: null,
+    ready: false,
+    processing: false,
+    pendingPreview: null   // { sentences, dictMap, existingDict }
+  };
+
+  /* ============ Helpers ============ */
+  const $ = sel => document.querySelector(sel);
+  const $$ = sel => Array.from(document.querySelectorAll(sel));
+
+  function toast(msg, type = 'info') {
+    const el = $('#toast');
+    if (!el) return;
+    el.textContent = msg;
+    el.className = 'toast show' + (type === 'ok' ? ' ok' : type === 'err' ? ' err' : type === 'warn' ? ' warn' : '');
+    clearTimeout(toast._timer);
+    toast._timer = setTimeout(() => el.classList.remove('show'), 3000);
+  }
+
+  function setSync(status, text) {
+    const dot = $('#syncDot');
+    if (dot) dot.className = 'sync-dot ' + (status || '');
+    if (text) $('#statusText').textContent = text;
+  }
+
+  function setStatus(text, type = '') {
+    const el = $('#inputStatus');
+    if (!el) return;
+    el.textContent = text;
+    el.className = 'input-status ' + type;
+  }
+
+  function normalizeKey(word) {
+    return String(word || '')
+      .toLowerCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^\p{L}']/gu, '')
+      .trim();
+  }
+
+  function normalizeMeaning(s) {
+    return String(s || '').trim().toLowerCase().replace(/\s+/g, ' ');
+  }
+
+  function escapeHtml(s) {
+    return String(s || '')
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
+  /**
+   * يدمج معنى جديد مع القديم:
+   * - لو القديم فارغ → يُرجع الجديد
+   * - لو الجديد فارغ → يُرجع القديم
+   * - لو الجديد موجود ضمن القديم (نفس المعنى) → يُرجع القديم دون تغيير
+   * - لو مختلف → يُرجع القديم + فاصل + الجديد
+   */
+  function mergeMeanings(oldMeaning, newMeaning) {
+    const oldM = String(oldMeaning || '').trim();
+    const newM = String(newMeaning || '').trim();
+
+    if (!oldM) return newM;
+    if (!newM) return oldM;
+
+    // فكك القديم إلى قائمة معانٍ
+    const parts = oldM.split(new RegExp('\\s*[•|]\\s*')).map(s => s.trim()).filter(Boolean);
+    const normalizedOld = parts.map(normalizeMeaning);
+    const normalizedNew = normalizeMeaning(newM);
+
+    if (normalizedOld.includes(normalizedNew)) {
+      return oldM; // نفس المعنى → تجاهل
+    }
+
+    return oldM + MEANING_SEPARATOR + newM;
+  }
+
+  /** يُرجع { merged, added, same } */
+  function compareMeanings(oldMeaning, newMeaning) {
+    const oldM = String(oldMeaning || '').trim();
+    const newM = String(newMeaning || '').trim();
+    const merged = mergeMeanings(oldM, newM);
+    const added = merged !== oldM;
+    return { merged, added, same: !added };
+  }
+
+  /* ============ Firebase Init ============ */
+  async function initFirebase() {
+    try {
+      if (!window.firebase) throw new Error('مكتبات Firebase غير محمّلة');
+      if (!FIREBASE_CONFIG.apiKey) throw new Error('إعدادات Firebase مفقودة');
+
+      if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+      state.db = firebase.firestore();
+
+      await state.db.collection('users').doc(USER_ID).get();
+
+      state.ready = true;
+      setSync('online', 'متصل بقاعدة البيانات (' + USER_ID.slice(0, 16) + '…)');
+      console.info('[Ingester] جاهز. USER_ID =', USER_ID);
+    } catch (err) {
+      console.error('[Ingester] init:', err);
+      setSync('offline', 'فشل الاتصال: ' + (err.message || err));
+      toast('فشل الاتصال بقاعدة البيانات', 'err');
+    }
+  }
+
+  /* ============ Parse JSON ============ */
+  function stripCodeFences(text) {
+    return String(text)
+      .replace(/^\s*```json\s*/i, '')
+      .replace(/^\s*```\s*/i, '')
+      .replace(/\s*```\s*$/i, '')
+      .trim();
+  }
+
+  function parseInput(raw) {
+    const text = stripCodeFences(raw);
+    if (!text) throw new Error('أدخل JSON أولاً');
+
+    let data;
+    try { data = JSON.parse(text); }
+    catch (e) { throw new Error('JSON غير صالح — ' + e.message); }
+
+    let sentences = [];
+    let dictionary = [];
+
+    if (data && typeof data === 'object' && !Array.isArray(data)) {
+      if (Array.isArray(data.sentences)) sentences = data.sentences.slice();
+      if (Array.isArray(data.dictionary)) dictionary = data.dictionary.slice();
+      if (data.italian && data.arabic && sentences.length === 0) {
+        sentences.push({ italian: data.italian, arabic: data.arabic });
+        if (Array.isArray(data.words)) dictionary.push(...data.words);
+      }
+    }
+
+    if (Array.isArray(data)) {
+      data.forEach(item => {
+        if (!item || typeof item !== 'object') return;
+        if (item.italian && item.arabic) {
+          sentences.push({ italian: item.italian, arabic: item.arabic });
+          if (Array.isArray(item.words)) dictionary.push(...item.words);
+          if (Array.isArray(item.dictionary)) dictionary.push(...item.dictionary);
+        }
+      });
+    }
+
+    if (sentences.length === 0 && dictionary.length === 0) {
+      throw new Error('لم يُعثر على "sentences" أو "dictionary" في JSON');
+    }
+
+    return { sentences, dictionary };
+  }
+
+  function validateSentence(s) {
+    if (!s || typeof s !== 'object') return null;
+    const italian = String(s.italian || '').trim();
+    const arabic = String(s.arabic || '').trim();
+    if (!italian || !arabic) return null;
+    return { italian, arabic };
+  }
+
+  function validateDictEntry(d) {
+    if (!d || typeof d !== 'object') return null;
+    const word = String(d.word || '').trim();
+    if (!word) return null;
+    const type = VALID_TYPES.includes(String(d.type || '').toLowerCase())
+      ? String(d.type).toLowerCase()
+      : 'word';
+    return {
+      word,
+      lemma: String(d.lemma || word).trim(),
+      type,
+      meaning: String(d.meaning || '').trim(),
+      summary: String(d.summary || '').trim()
+    };
+  }
+
+  /* ============ Merge within batch ============ */
+  function buildDictMap(entries) {
+    const map = new Map();
+    entries.forEach(d => {
+      const entry = validateDictEntry(d);
+      if (!entry) return;
+      const key = normalizeKey(entry.word);
+      if (!key) return;
+
+      if (map.has(key)) {
+        const existing = map.get(key);
+        // دمج المعاني داخل نفس الدفعة
+        existing.meaning = mergeMeanings(existing.meaning, entry.meaning);
+        // املأ الحقول الناقصة
+        if (!existing.lemma && entry.lemma) existing.lemma = entry.lemma;
+        if (!existing.summary && entry.summary) existing.summary = entry.summary;
+        if (existing.type === 'word' && entry.type !== 'word') existing.type = entry.type;
+      } else {
+        map.set(key, entry);
+      }
+    });
+    return map;
+  }
+
+  /* ============ Live preview (counts only) ============ */
+  function previewInput() {
+    const text = $('#jsonInput').value.trim();
+    const btn = $('#btnAnalyze');
+    const ta = $('#jsonInput');
+
+    // امسح المعاينة السابقة
+    hidePreview();
+
+    if (!text) {
+      setStatus('بانتظار النص…');
+      btn.disabled = true;
+      ta.classList.remove('valid', 'invalid');
+      return;
+    }
+
+    try {
+      const parsed = parseInput(text);
+      const validS = parsed.sentences.map(validateSentence).filter(Boolean);
+      const dictMap = buildDictMap(parsed.dictionary);
+
+      setStatus(`✅ ${validS.length} جملة + ${dictMap.size} كلمة (جاهزة للتحليل)`, 'ok');
+      btn.disabled = (validS.length + dictMap.size === 0);
+      ta.classList.add('valid');
+      ta.classList.remove('invalid');
+    } catch (e) {
+      setStatus('⚠️ ' + e.message, 'err');
+      btn.disabled = true;
+      ta.classList.add('invalid');
+      ta.classList.remove('valid');
+    }
+  }
+
+  /* ============ Analysis Phase ============ */
+  async function analyze() {
+    if (state.processing) return;
+    if (!state.ready) { toast('القاعدة غير جاهزة', 'err'); return; }
+
+    const text = $('#jsonInput').value.trim();
+    if (!text) { toast('الصق JSON أولاً', 'err'); return; }
+
+    let parsed;
+    try { parsed = parseInput(text); }
+    catch (e) { toast(e.message, 'err'); return; }
+
+    const sentences = parsed.sentences.map(validateSentence).filter(Boolean);
+    const dictMap = buildDictMap(parsed.dictionary);
+
+    if (sentences.length === 0 && dictMap.size === 0) {
+      toast('لا توجد بيانات صالحة', 'err');
+      return;
+    }
+
+    state.processing = true;
+    setSync('syncing', 'جارٍ تحليل البيانات ومقارنتها بالمخزّن…');
+
+    const btn = $('#btnAnalyze');
+    btn.classList.add('loading');
+    btn.disabled = true;
+    btn.textContent = 'جارٍ التحليل…';
+
+    try {
+      // جلب البيانات الموجودة
+      const [sentSnap, dictSnap] = await Promise.all([
+        state.db.collection('users').doc(USER_ID).collection('sentences').get(),
+        state.db.collection('users').doc(USER_ID).collection('dictionary').get()
+      ]);
+
+      // === الجمل: كشف المكرر ===
+      const existingItalian = new Set();
+      sentSnap.docs.forEach(doc => {
+        const d = doc.data() || {};
+        const it = String(d.italian || '').trim().toLowerCase();
+        if (it) existingItalian.add(it);
+      });
+
+      const freshSentences = [];
+      const dupSentences = [];
+      const batchSeen = new Set();
+
+      sentences.forEach(s => {
+        const key = s.italian.trim().toLowerCase();
+        if (existingItalian.has(key)) {
+          dupSentences.push({ sentence: s, reason: 'موجودة مسبقًا' });
+        } else if (batchSeen.has(key)) {
+          dupSentences.push({ sentence: s, reason: 'مكررة في نفس الدفعة' });
+        } else {
+          freshSentences.push(s);
+          batchSeen.add(key);
+        }
+      });
+
+      // === القاموس: دمج ذكي ===
+      const existingDict = new Map();
+      dictSnap.docs.forEach(doc => {
+        existingDict.set(doc.id, doc.data() || {});
+      });
+
+      const dictOps = [];   // للعمليات التي ستُرفع
+      const dictSkipped = []; // للكلمات المكررة (نفس المعنى)
+
+      dictMap.forEach((entry, key) => {
+        const old = existingDict.get(key);
+
+        if (!old) {
+          // كلمة جديدة كليًا
+          dictOps.push({
+            key,
+            kind: 'new',
+            data: {
+              word: entry.word,
+              lemma: entry.lemma,
+              type: entry.type,
+              meaning: entry.meaning,
+              summary: entry.summary,
+              updated_at: Date.now()
+            }
+          });
+          return;
+        }
+
+        // كلمة موجودة → قارن
+        const oldMeaning = String(old.meaning || '').trim();
+        const cmp = compareMeanings(oldMeaning, entry.meaning);
+
+        if (cmp.same) {
+          // نفس المعنى → تجاهل
+          dictSkipped.push({
+            word: entry.word,
+            key,
+            reason: 'نفس المعنى',
+            oldMeaning
+          });
+          return;
+        }
+
+        // معنى إضافي أو أول معنى
+        const mergedData = {
+          word: entry.word || old.word || '',
+          lemma: old.lemma || entry.lemma || entry.word,
+          type: (old.type && old.type !== 'word') ? old.type : (entry.type || 'word'),
+          meaning: cmp.merged,
+          summary: old.summary || entry.summary || '',
+          updated_at: Date.now()
+        };
+
+        dictOps.push({
+          key,
+          kind: cmp.added ? 'meaning-added' : 'new',
+          data: mergedData
+        });
+      });
+
+      // عدّادات
+      const preview = {
+        sentNew: freshSentences.length,
+        sentDup: dupSentences.length,
+        dictNew: dictOps.filter(o => o.kind === 'new').length,
+        dictAdded: dictOps.filter(o => o.kind === 'meaning-added').length,
+        dictSame: dictSkipped.length,
+        // البيانات للاستخدام في الرفع
+        _freshSentences: freshSentences,
+        _dupSentences: dupSentences,
+        _dictOps: dictOps,
+        _dictSkipped: dictSkipped
+      };
+
+      state.pendingPreview = preview;
+      renderPreview(preview);
+
+      setSync('online', 'متصل — جاهز للرفع');
+      console.info('[Ingester] تحليل:', {
+        freshSentences: preview.sentNew,
+        duplicateSentences: preview.sentDup,
+        newDict: preview.dictNew,
+        meaningAdded: preview.dictAdded,
+        dictSame: preview.dictSame
+      });
+
+    } catch (err) {
+      console.error('[Ingester] analyze:', err);
+      toast('فشل التحليل: ' + (err.message || err), 'err');
+      setSync('offline', 'خطأ في التحليل');
+    } finally {
+      state.processing = false;
+      btn.classList.remove('loading');
+      btn.textContent = '🔍 تحليل ومعاينة قبل الرفع';
+      previewInput();
+    }
+  }
+
+  /* ============ Render Preview ============ */
+  function renderPreview(p) {
+    $('#prevSentNew').textContent = p.sentNew;
+    $('#prevSentDup').textContent = p.sentDup;
+    $('#prevDictNew').textContent = p.dictNew;
+    $('#prevDictAdded').textContent = p.dictAdded;
+    $('#prevDictSame').textContent = p.dictSame;
+
+    $('#previewCard').hidden = false;
+    $('#previewCard').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+    // إذا لا يوجد شيء للإضافة
+    const total = p.sentNew + p.dictNew + p.dictAdded;
+    const confirmBtn = $('#btnConfirmUpload');
+    if (total === 0) {
+      confirmBtn.disabled = true;
+      confirmBtn.textContent = '🚫 لا يوجد جديد للرفع';
+    } else {
+      confirmBtn.disabled = false;
+      confirmBtn.textContent = `🚀 تأكيد الرفع (${total} عملية)`;
+    }
+  }
+
+  function hidePreview() {
+    $('#previewCard').hidden = true;
+    state.pendingPreview = null;
+  }
+
+  /* ============ Commit Phase ============ */
+  async function commitUpload() {
+    if (state.processing) return;
+    const p = state.pendingPreview;
+    if (!p) { toast('لا توجد بيانات للمعاينة', 'err'); return; }
+
+    const total = p.sentNew + p.dictNew + p.dictAdded;
+    if (total === 0) { toast('لا يوجد جديد للرفع', 'warn'); return; }
+
+    state.processing = true;
+    const confirmBtn = $('#btnConfirmUpload');
+    confirmBtn.classList.add('loading');
+    confirmBtn.disabled = true;
+    confirmBtn.textContent = 'جارٍ الرفع…';
+    setSync('syncing', 'جارٍ الرفع إلى السحابة…');
+
+    const startedAt = Date.now();
+    let failed = 0;
+
+    try {
+      const userRef = state.db.collection('users').doc(USER_ID);
+      const sentencesCol = userRef.collection('sentences');
+      const dictCol = userRef.collection('dictionary');
+      const now = Date.now();
+
+      const ops = [];
+
+      // الجمل الجديدة
+      p._freshSentences.forEach(s => {
+        const ref = sentencesCol.doc(); // auto ID
+        ops.push({
+          ref,
+          data: {
+            italian: s.italian,
+            arabic: s.arabic,
+            next_review: now - 1,
+            easy_streak: 0,
+            medium_streak: 0,
+            in_mistake_bank: false,
+            is_frozen: false,
+            created_at: now,
+            last_reviewed: null
+          },
+          merge: false,
+          kind: 'sentence'
+        });
+      });
+
+      // عمليات القاموس
+      p._dictOps.forEach(op => {
+        const ref = dictCol.doc(op.key);
+        ops.push({
+          ref,
+          data: op.data,
+          merge: true,
+          kind: op.kind // 'new' أو 'meaning-added'
+        });
+      });
+
+      // دفعات
+      const chunks = [];
+      for (let i = 0; i < ops.length; i += BATCH_LIMIT) {
+        chunks.push(ops.slice(i, i + BATCH_LIMIT));
+      }
+
+      for (const chunk of chunks) {
+        try {
+          const batch = state.db.batch();
+          chunk.forEach(op => {
+            if (op.merge) batch.set(op.ref, op.data, { merge: true });
+            else batch.set(op.ref, op.data);
+          });
+          await batch.commit();
+        } catch (err) {
+          console.error('[Batch] failed:', err);
+          failed += chunk.length;
+        }
+      }
+
+      // النتيجة
+      const elapsed = ((Date.now() - startedAt) / 1000).toFixed(1);
+      const report = {
+        timestamp: now,
+        sentNew: p.sentNew,
+        sentDup: p.sentDup,
+        dictNew: p.dictNew,
+        dictAdded: p.dictAdded,
+        dictSame: p.dictSame,
+        failed,
+        elapsed,
+        details: {
+          duplicateSentences: p._dupSentences.map(d => ({
+            italian: d.sentence.italian,
+            arabic: d.sentence.arabic,
+            reason: d.reason
+          })),
+          skippedDict: p._dictSkipped.map(d => ({
+            word: d.word,
+            reason: d.reason,
+            oldMeaning: d.oldMeaning
+          })),
+          meaningAddedList: p._dictOps
+            .filter(o => o.kind === 'meaning-added')
+            .map(o => ({
+              word: o.data.word,
+              meaning: o.data.meaning
+            }))
+        }
+      };
+
+      renderResults(report);
+      addHistoryEntry(report);
+
+      if (failed === 0) {
+        toast(`✅ تم رفع ${p.sentNew} جملة · ${p.dictNew + p.dictAdded} كلمة`, 'ok');
+        setSync('online', 'متصل — تم الرفع بنجاح');
+        // امسح الحقل بعد النجاح
+        $('#jsonInput').value = '';
+        hidePreview();
+        previewInput();
+      } else {
+        toast(`⚠️ بعض العمليات فشلت (${failed})`, 'warn');
+        setSync('online', 'متصل — نجاح جزئي');
+      }
+
+    } catch (err) {
+      console.error('[Ingester] commit:', err);
+      toast('خطأ غير متوقع: ' + (err.message || err), 'err');
+      setSync('offline', 'خطأ في الرفع');
+    } finally {
+      state.processing = false;
+      confirmBtn.classList.remove('loading');
+      confirmBtn.disabled = false;
+      confirmBtn.textContent = '🚀 تأكيد الرفع';
+    }
+  }
+
+  /* ============ Render Results ============ */
+  function renderResults(r) {
+    const card = $('#resultsCard');
+    card.hidden = false;
+
+    const grid = $('#resultsGrid');
+    grid.innerHTML = `
+      <div class="result-item success">
+        <span class="v">${r.sentNew}</span>
+        <span class="l">جمل جديدة</span>
+      </div>
+      <div class="result-item skipped">
+        <span class="v">${r.sentDup}</span>
+        <span class="l">جمل مكررة تم تجاهلها</span>
+      </div>
+      <div class="result-item success">
+        <span class="v">${r.dictNew}</span>
+        <span class="l">كلمات جديدة</span>
+      </div>
+      <div class="result-item added">
+        <span class="v">${r.dictAdded}</span>
+        <span class="l">معانٍ إضافية</span>
+      </div>
+      ${r.dictSame > 0 ? `
+      <div class="result-item skipped">
+        <span class="v">${r.dictSame}</span>
+        <span class="l">كلمات بنفس المعنى</span>
+      </div>` : ''}
+      ${r.failed > 0 ? `
+      <div class="result-item error">
+        <span class="v">${r.failed}</span>
+        <span class="l">فشل</span>
+      </div>` : ''}
+      <div class="result-item">
+        <span class="v">${r.elapsed}s</span>
+        <span class="l">الوقت</span>
+      </div>
+    `;
+
+    // التفاصيل
+    const details = $('#resultsDetailsContent');
+    let html = '';
+
+    if (r.details.duplicateSentences.length) {
+      html += `<div class="details-group"><h5>📅 جمل مكررة تم تجاهلها</h5>`;
+      r.details.duplicateSentences.forEach(d => {
+        html += `<div class="detail-item">
+          <span class="it">${escapeHtml(d.italian)}</span>
+          <span class="reason">${escapeHtml(d.reason)}</span>
+        </div>`;
+      });
+      html += `</div>`;
+    }
+
+    if (r.details.meaningAddedList.length) {
+      html += `<div class="details-group"><h5>➕ معانٍ أُضيفت</h5>`;
+      r.details.meaningAddedList.forEach(d => {
+        html += `<div class="detail-item">
+          <span class="it" style="flex:0;">${escapeHtml(d.word)}</span>
+          <span class="ar" style="flex:1;">${escapeHtml(d.meaning)}</span>
+        </div>`;
+      });
+      html += `</div>`;
+    }
+
+    if (r.details.skippedDict.length) {
+      html += `<div class="details-group"><h5>📖 كلمات بنفس المعنى (لم تُعدّل)</h5>`;
+      r.details.skippedDict.forEach(d => {
+        html += `<div class="detail-item">
+          <span class="it" style="flex:0;">${escapeHtml(d.word)}</span>
+          <span class="ar" style="flex:1;">${escapeHtml(d.oldMeaning)}</span>
+          <span class="reason">${escapeHtml(d.reason)}</span>
+        </div>`;
+      });
+      html += `</div>`;
+    }
+
+    if (!html) {
+      html = '<div class="empty-state">لا توجد تفاصيل</div>';
+    }
+    details.innerHTML = html;
+
+    $('#resultsDetails').open = false;
+    card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  /* ============ History ============ */
+  function loadHistory() {
+    try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'); }
+    catch { return []; }
+  }
+  function saveHistory(items) {
+    try { localStorage.setItem(HISTORY_KEY, JSON.stringify(items.slice(0, 10))); }
+    catch (e) { console.warn('[History]', e); }
+  }
+  function addHistoryEntry(entry) {
+    const history = loadHistory();
+    history.unshift({
+      timestamp: entry.timestamp,
+      sentNew: entry.sentNew,
+      sentDup: entry.sentDup,
+      dictNew: entry.dictNew,
+      dictAdded: entry.dictAdded,
+      dictSame: entry.dictSame,
+      failed: entry.failed
+    });
+    saveHistory(history);
+    renderHistory();
+  }
+  function renderHistory() {
+    const history = loadHistory();
+    const card = $('#historyCard');
+    const wrap = $('#historyList');
+
+    if (!history.length) { card.hidden = true; return; }
+    card.hidden = false;
+
+    wrap.innerHTML = history.map(item => {
+      const date = new Date(item.timestamp);
+      const timeStr = date.toLocaleString('ar-EG', {
+        day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit'
+      });
+      const parts = [];
+      if (item.sentNew) parts.push(`+${item.sentNew} جملة`);
+      if (item.sentDup) parts.push(`${item.sentDup} مكرر`);
+      if (item.dictNew) parts.push(`+${item.dictNew} كلمة`);
+      if (item.dictAdded) parts.push(`+${item.dictAdded} معنى`);
+      if (item.dictSame) parts.push(`${item.dictSame} نفس المعنى`);
+      if (item.failed) parts.push(`${item.failed} فشل`);
+
+      return `
+        <div class="history-item">
+          <div class="history-item-icon">✓</div>
+          <div class="history-item-content">
+            <div class="history-item-title">${parts.join(' · ')}</div>
+            <div class="history-item-time">${timeStr}</div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  /* ============ Copy Prompt ============ */
+  async function copyPrompt() {
+    try {
+      await navigator.clipboard.writeText(AI_PROMPT);
+      toast('تم نسخ البرومبت ✓', 'ok');
+      const btn = $('#btnCopyPrompt');
+      btn.classList.add('copied');
+      btn.textContent = '✅ تم النسخ';
+      setTimeout(() => {
+        btn.classList.remove('copied');
+        btn.textContent = '📋 نسخ البرومبت';
+      }, 2000);
+    } catch (_) {
+      openPromptModal();
+      toast('انسخ يدويًا من النافذة', 'warn');
+    }
+  }
+  function openPromptModal() {
+    $('#promptContent').textContent = AI_PROMPT;
+    $('#promptOverlay').classList.add('is-open');
+  }
+  function closePromptModal() {
+    $('#promptOverlay').classList.remove('is-open');
+  }
+  async function copyFromModal() {
+    try {
+      await navigator.clipboard.writeText(AI_PROMPT);
+      toast('تم نسخ البرومبت ✓', 'ok');
+      closePromptModal();
+    } catch (_) {
+      const range = document.createRange();
+      range.selectNodeContents($('#promptContent'));
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+      toast('حدد النص وانسخه يدويًا (Ctrl+C)', 'warn');
+    }
+  }
+
+  /* ============ Sample / Clear ============ */
+  function loadSample() {
+    const sample = `{
+  "sentences": [
+    {
+      "italian": "Io mangio una mela ogni mattina",
+      "arabic": "أنا آكل تفاحة كل صباح"
+    },
+    {
+      "italian": "Vado a Roma con il treno",
+      "arabic": "أذهب إلى روما بالقطار"
+    }
+  ],
+  "dictionary": [
+    {
+      "word": "mangio",
+      "lemma": "mangiare",
+      "type": "verb",
+      "meaning": "آكل",
+      "summary": "io mangio, tu mangi, lui/lei mangia, noi mangiamo, voi mangiate, loro mangiano"
+    },
+    {
+      "word": "a",
+      "lemma": "a",
+      "type": "preposition",
+      "meaning": "إلى",
+      "summary": "تُستخدم للاتجاه (a Roma)، أو الوقت (alle 8)، أو الحالة (a casa)."
+    },
+    {
+      "word": "il",
+      "lemma": "il",
+      "type": "article",
+      "meaning": "أداة التعريف (مذكر)",
+      "summary": "قبل الأسماء المذكرة المفردة. lo قبل s+consonant أو z. l' قبل الحروف المتحركة."
+    },
+    {
+      "word": "mela",
+      "lemma": "mela",
+      "type": "word",
+      "meaning": "تفاحة",
+      "summary": "اسم مؤنث (la mela). جمع: le mele."
+    }
+  ]
+}`;
+    $('#jsonInput').value = sample;
+    previewInput();
+    toast('تم تحميل المثال', 'ok');
+  }
+
+  function clearInput() {
+    $('#jsonInput').value = '';
+    hidePreview();
+    previewInput();
+    toast('تم المسح');
+  }
+
+  /* ============ Bind Events ============ */
+  function bindEvents() {
+    $('#btnCopyPrompt').addEventListener('click', copyPrompt);
+    $('#btnAnalyze').addEventListener('click', analyze);
+    $('#btnConfirmUpload').addEventListener('click', commitUpload);
+    $('#btnCancelPreview').addEventListener('click', () => {
+      hidePreview();
+      toast('تم إلغاء المعاينة');
+    });
+    $('#btnSample').addEventListener('click', loadSample);
+    $('#btnClear').addEventListener('click', clearInput);
+    $('#jsonInput').addEventListener('input', previewInput);
+
+    $('#btnClosePrompt').addEventListener('click', closePromptModal);
+    $('#btnCloseModal').addEventListener('click', closePromptModal);
+    $('#btnCopyFromModal').addEventListener('click', copyFromModal);
+    $('#promptOverlay').addEventListener('click', e => {
+      if (e.target === $('#promptOverlay')) closePromptModal();
+    });
+
+    $('#jsonInput').addEventListener('keydown', e => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+        e.preventDefault();
+        if (!$('#btnAnalyze').disabled) analyze();
+      }
+    });
+  }
+
+  /* ============ Boot ============ */
+  async function boot() {
+    bindEvents();
+    renderHistory();
+    await initFirebase();
+    previewInput();
+    console.info('[Ingester v2] Boot complete. USER_ID =', USER_ID);
+  }
+
+  document.addEventListener('DOMContentLoaded', boot);
+})();
+</script>
+</body>
+</html>
