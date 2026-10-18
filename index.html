@@ -14,31 +14,22 @@
 [hidden] { display: none !important; }
 
 :root {
-  --bg: #f7f5f0;
-  --surface: #ffffff;
-  --surface-2: #fbfaf7;
-  --primary: #2d7a68;
-  --primary-dark: #1f5a4c;
-  --primary-soft: #e4f1ed;
-  --easy: #4caf7d;      --easy-soft: #e6f5ee;
-  --medium: #eba827;    --medium-soft: #fdf3e0;
-  --hard: #e76f51;      --hard-soft: #fbe8e2;
-  --text: #23302c;
-  --text-soft: #6b7a76;
-  --border: #ece8e1;
+  --bg: #f7f5f0; --surface: #ffffff; --surface-2: #fbfaf7;
+  --primary: #2d7a68; --primary-dark: #1f5a4c; --primary-soft: #e4f1ed;
+  --easy: #4caf7d; --easy-soft: #e6f5ee;
+  --medium: #eba827; --medium-soft: #fdf3e0;
+  --hard: #e76f51; --hard-soft: #fbe8e2;
+  --text: #23302c; --text-soft: #6b7a76; --border: #ece8e1;
   --shadow-sm: 0 1px 3px rgba(30,45,40,.06);
   --shadow-lg: 0 10px 30px rgba(30,45,40,.14);
-  --radius-sm: 12px;
-  --radius: 16px;
-  --radius-lg: 22px;
+  --radius-sm: 12px; --radius: 16px; --radius-lg: 22px;
 }
 
 html, body {
   height: 100%; background: var(--bg); color: var(--text);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Kufi Arabic", "Tahoma", sans-serif;
   font-size: 15px; line-height: 1.5;
-  -webkit-font-smoothing: antialiased;
-  overscroll-behavior-y: none;
+  -webkit-font-smoothing: antialiased; overscroll-behavior-y: none;
 }
 body { min-height: 100vh; }
 
@@ -385,6 +376,73 @@ textarea.input { resize: vertical; min-height: 60px; }
 }
 .btn-dict-edit:hover { background: var(--border); }
 
+/* =========================================================
+   Verb cards — Manual (structured table) + Dict (chips)
+   ========================================================= */
+.verb-conj-block {
+  background: #f0f4ff;
+  border: 1px solid #c7d9ff;
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  margin-bottom: 10px;
+}
+.verb-section-label {
+  font-size: 12.5px; font-weight: 800;
+  color: #4a6ee0; margin-bottom: 8px;
+  display: flex; align-items: center; gap: 6px;
+}
+.verb-conj-table { display: flex; flex-direction: column; gap: 4px; }
+.verb-conj-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 7px 11px; background: #fff; border-radius: 6px;
+  font-size: 13.5px; border: 1.5px solid transparent;
+  transition: border-color .2s ease, background .2s ease;
+}
+.verb-conj-row.active {
+  background: #e0ecff; border-color: #4a6ee0; font-weight: 800;
+}
+.verb-pronoun { color: var(--text-soft); font-size: 12px; min-width: 55px; font-weight: 600; }
+.verb-form { font-family: "Georgia", serif; font-weight: 600; color: #2a4cb5; direction: ltr; }
+.verb-reflexive-block {
+  background: #f5f0ff; border: 1px solid #d8ccf0;
+  border-radius: var(--radius-sm); padding: 12px 14px; margin-top: 10px;
+}
+.verb-reflexive-block .verb-section-label { color: #7c4dcc; }
+.verb-reflexive-meaning { font-size: 13px; color: #5a3a99; margin-bottom: 8px; font-weight: 600; }
+.verb-reflexive-block .verb-conj-row.active { background: #ede5ff; border-color: #7c4dcc; }
+
+/* Verb cards — Dict (chips) */
+.verb-tense-block {
+  background: #f0f4ff; border: 1px solid #c7d9ff;
+  border-radius: var(--radius-sm); padding: 12px 14px;
+  margin-bottom: 10px;
+  transition: border-color .2s ease, box-shadow .2s ease;
+}
+.verb-tense-block:last-child { margin-bottom: 0; }
+.verb-tense-block.has-match {
+  border-color: #4a6ee0;
+  box-shadow: 0 0 0 2px rgba(74,110,224,.15);
+}
+.verb-tense-label {
+  font-size: 12.5px; font-weight: 800; color: #4a6ee0;
+  margin-bottom: 8px;
+  display: flex; align-items: center; gap: 6px;
+}
+.verb-tense-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+.verb-form-chip {
+  background: #fff; border: 1.5px solid #d0dff5;
+  border-radius: 8px; padding: 4px 9px;
+  font-family: "Georgia", serif; font-size: 13px;
+  font-weight: 600; color: #2a4cb5; direction: ltr;
+  transition: all .15s ease;
+}
+.verb-form-chip.active {
+  background: #4a6ee0; border-color: #4a6ee0;
+  color: #fff; font-weight: 800;
+  box-shadow: 0 2px 8px rgba(74,110,224,.3);
+  transform: scale(1.05);
+}
+
 /* ===== Toast ===== */
 .toast {
   position: fixed; bottom: 24px; left: 50%;
@@ -532,7 +590,7 @@ textarea.input { resize: vertical; min-height: 60px; }
 
 <script>
 /* =========================================================
-   Imparo — Single-File App
+   Imparo — Single-File App (v2.0 — Verbs Integration)
    ========================================================= */
 (function () {
   'use strict';
@@ -551,7 +609,7 @@ textarea.input { resize: vertical; min-height: 60px; }
   const USER_ID = "ahmed_imparo_53eea_x7k9m2p4q8w3_admin";
 
   /* =========================================================
-     SRS — خوارزمية التكرار المتباعد
+     SRS
      ========================================================= */
   const SRS = (function () {
     const REVIEW_HOUR = 10;
@@ -567,7 +625,6 @@ textarea.input { resize: vertical; min-height: 60px; }
       d.setHours(0, 0, 0, 0);
       return d;
     }
-
     function reviewDayKey(now = new Date()) {
       const d = startOfReviewDay(now);
       const y = d.getFullYear();
@@ -575,21 +632,18 @@ textarea.input { resize: vertical; min-height: 60px; }
       const day = String(d.getDate()).padStart(2, '0');
       return `${y}-${m}-${day}`;
     }
-
     function scheduleIn(daysAhead, now = new Date()) {
       const d = new Date(now);
       d.setDate(d.getDate() + daysAhead);
       d.setHours(REVIEW_HOUR, 0, 0, 0);
       return d.getTime();
     }
-
     function isDue(s, now = Date.now()) {
       if (!s) return false;
       if (s.is_frozen) return false;
       if (s.in_mistake_bank) return false;
       return (s.next_review || 0) <= now;
     }
-
     function applyEasy(s, now = new Date()) {
       const streak = (s.easy_streak || 0) + 1;
       const days = streak > EASY_STREAK_MAX ? EASY_LONG_DAYS : EASY_DAYS;
@@ -608,12 +662,11 @@ textarea.input { resize: vertical; min-height: 60px; }
     function applyWrongFromMistakes(s, now = new Date()) {
       return { next_review: scheduleIn(1, now), easy_streak: 0, medium_streak: 0, in_mistake_bank: true, last_reviewed: now.getTime() };
     }
-
     return { REVIEW_HOUR, startOfReviewDay, reviewDayKey, scheduleIn, isDue, applyEasy, applyMedium, applyHard, applyCorrectFromMistakes, applyWrongFromMistakes };
   })();
 
   /* =========================================================
-     Speech — Web Speech API + Fallback
+     Speech
      ========================================================= */
   const Speech = (function () {
     const supported = 'speechSynthesis' in window;
@@ -630,7 +683,6 @@ textarea.input { resize: vertical; min-height: 60px; }
       setTimeout(loadVoices, 300);
       setTimeout(loadVoices, 1200);
     }
-
     function pickItalianVoice() {
       if (cachedVoice) return cachedVoice;
       if (!voicesReady) loadVoices();
@@ -642,7 +694,6 @@ textarea.input { resize: vertical; min-height: 60px; }
       if (v) return (cachedVoice = { voice: v, tier: 'name-based' });
       return (cachedVoice = { voice: null, tier: 'none' });
     }
-
     function speak(text) {
       if (!text || !text.trim()) return;
       if (!supported) { notifyFallback('هذا المتصفح لا يدعم النطق الصوتي.'); return; }
@@ -697,6 +748,7 @@ textarea.input { resize: vertical; min-height: 60px; }
     function userRef() { ensureReady(); return db.collection('users').doc(uid); }
     function sentencesCol() { ensureReady(); return userRef().collection('sentences'); }
     function dictCol() { ensureReady(); return userRef().collection('dictionary'); }
+    function verbsCol() { ensureReady(); return userRef().collection('verbs'); }
 
     const defaultUser = () => ({ streak: 0, last_review_day: null, reviewed_today: 0, reviewed_day_key: null, created_at: Date.now(), updated_at: Date.now() });
 
@@ -736,6 +788,12 @@ textarea.input { resize: vertical; min-height: 60px; }
       return dict;
     }
 
+    async function loadVerbs() {
+      ensureReady();
+      const snap = await verbsCol().get();
+      return snap.docs.map(d => Object.assign({ id: d.id }, d.data() || {}));
+    }
+
     async function getDictionaryEntry(wordKey) {
       ensureReady();
       const snap = await dictCol().doc(wordKey).get();
@@ -750,14 +808,15 @@ textarea.input { resize: vertical; min-height: 60px; }
 
     function getUid() { return uid; }
 
-    return { init, loadUser, saveUser, loadSentences, addSentence, updateSentence, deleteSentence, loadDictionary, getDictionaryEntry, saveDictionaryEntry, normalizeKey, getUid };
+    return { init, loadUser, saveUser, loadSentences, addSentence, updateSentence, deleteSentence, loadDictionary, loadVerbs, getDictionaryEntry, saveDictionaryEntry, normalizeKey, getUid };
   })();
 
   /* =========================================================
-     State & Helpers
+     State
      ========================================================= */
   const state = {
     user: null, sentences: [], dict: {},
+    verbs: [], verbFormsIndex: new Map(),
     queue: [], qIndex: 0, flipped: false,
     session: { easy: 0, medium: 0, hard: 0 },
     listMode: null, busy: false
@@ -788,6 +847,106 @@ textarea.input { resize: vertical; min-height: 60px; }
   const dueToday = () => state.sentences.filter(s => SRS.isDue(s));
   const mistakesList = () => state.sentences.filter(s => s.in_mistake_bank && !s.is_frozen);
   const frozenList = () => state.sentences.filter(s => s.is_frozen);
+
+  /* =========================================================
+     Verb Index — دمج verbs + dictionary (type=verb)
+     ========================================================= */
+  function extractFormsFromVerbSummary(summary) {
+    const forms = new Set();
+    if (!summary) return [];
+    const sections = String(summary).split(/\s*\|\s*|\n+/).filter(Boolean);
+    sections.forEach(section => {
+      const colonIdx = section.indexOf(':');
+      const content = colonIdx >= 0 ? section.substring(colonIdx + 1) : section;
+      content.split(/[,،؛;]/).forEach(chunk => {
+        let text = chunk.trim();
+        if (!text) return;
+        text = text.replace(/^(io|tu|lui\/lei|lui|lei|noi|voi|loro|mi|ti|si|ci|vi)\s+/i, '');
+        const words = text.match(/[\p{Script=Latin}']+/gu) || [];
+        if (words.length) {
+          const lastWord = words[words.length - 1];
+          if (lastWord.length > 1) {
+            const norm = Store.normalizeKey(lastWord);
+            if (norm) forms.add(norm);
+          }
+        }
+      });
+    });
+    return Array.from(forms);
+  }
+
+  function parseVerbSummary(summary) {
+    if (!summary) return [];
+    const sections = String(summary).split(/\s*\|\s*|\n+/).filter(Boolean);
+    const result = [];
+    sections.forEach(section => {
+      const colonIdx = section.indexOf(':');
+      if (colonIdx < 0) {
+        const forms = section.split(/[,،؛;]/).map(s => s.trim()).filter(Boolean);
+        if (forms.length) result.push({ label: 'التصريفات', forms });
+        return;
+      }
+      const label = section.substring(0, colonIdx).trim();
+      const content = section.substring(colonIdx + 1).trim();
+      const forms = content.split(/[,،؛;]/).map(chunk => {
+        let text = chunk.trim();
+        if (!text) return null;
+        text = text.replace(/^(io|tu|lui\/lei|lui|lei|noi|voi|loro|mi|ti|si|ci|vi)\s+/i, '');
+        const words = text.match(/[\p{Script=Latin}']+/gu) || [];
+        if (!words.length) return null;
+        return words.join(' ');
+      }).filter(Boolean);
+      if (forms.length) result.push({ label, forms });
+    });
+    return result;
+  }
+
+  function buildVerbFormsIndex() {
+    const index = new Map();
+
+    // 1) أفعال يدوية من مجموعة verbs
+    state.verbs.forEach(verb => {
+      const forms = new Set();
+      const add = (s) => { if (!s) return; const k = Store.normalizeKey(s); if (k) forms.add(k); };
+      const addReflexive = (s) => {
+        if (!s) return;
+        add(s);
+        const parts = String(s).trim().split(/\s+/);
+        add(parts[parts.length - 1]);
+      };
+      add(verb.infinitive);
+      if (verb.present) Object.values(verb.present).forEach(add);
+      add(verb.reflexive_infinitive);
+      if (verb.present_reflexive) Object.values(verb.present_reflexive).forEach(addReflexive);
+
+      forms.forEach(form => {
+        if (form && !index.has(form)) {
+          index.set(form, { source: 'manual', verb });
+        }
+      });
+    });
+
+    // 2) أفعال من dictionary (نوعها verb — قادمة من AI)
+    Object.entries(state.dict).forEach(([key, entry]) => {
+      if (!entry || entry.type !== 'verb') return;
+      const forms = new Set();
+      const add = (s) => { if (!s) return; const k = Store.normalizeKey(s); if (k) forms.add(k); };
+      add(entry.word);
+      add(entry.lemma);
+      add(key);
+      extractFormsFromVerbSummary(entry.summary).forEach(f => forms.add(f));
+
+      forms.forEach(form => {
+        if (form && !index.has(form)) {
+          index.set(form, { source: 'dict', entry, key });
+        }
+      });
+    });
+
+    state.verbFormsIndex = index;
+    const dictVerbsCount = Object.values(state.dict).filter(e => e && e.type === 'verb').length;
+    console.info(`[VerbIndex] ${state.verbs.length} يدوي + ${dictVerbsCount} قاموس → ${index.size} صيغة مفهرسة`);
+  }
 
   /* =========================================================
      Streak / Daily
@@ -961,9 +1120,9 @@ textarea.input { resize: vertical; min-height: 60px; }
   }
 
   /* =========================================================
-     Dictionary — Dynamic by Type
+     Dictionary — Entry normalization
      ========================================================= */
-  let currentDictContext = null; // { key, original }
+  let currentDictContext = null;
 
   function normalizeEntry(raw) {
     if (!raw) return null;
@@ -985,14 +1144,23 @@ textarea.input { resize: vertical; min-height: 60px; }
     if (!key) return;
     currentDictContext = { key, original };
 
-    // اعرض حالة التحميل فورًا
+    // 1) افحص فهرس الأفعال أولًا (يدوي + قاموس)
+    if (state.verbFormsIndex.has(key)) {
+      const found = state.verbFormsIndex.get(key);
+      $('#popupOverlay').classList.add('is-open');
+      if (found.source === 'manual') {
+        renderVerbCard(found.verb, original);
+      } else {
+        renderDictVerbCard(found.entry, original, found.key);
+      }
+      return;
+    }
+
+    // 2) افحص القاموس (كاش → Firestore)
     renderDictLoading(original);
     $('#popupOverlay').classList.add('is-open');
 
-    // جرّب الكاش أولًا
     let entry = normalizeEntry(state.dict[key]);
-
-    // لو لم يكن في الكاش بصيغة جديدة، اطلبه من Firestore
     if (!entry) {
       try {
         const fresh = await Store.getDictionaryEntry(key);
@@ -1001,8 +1169,8 @@ textarea.input { resize: vertical; min-height: 60px; }
       } catch (e) { console.warn('[Dict] fetch:', e); }
     }
 
-    // لو ما زال فارغًا، اعرض نموذج الإضافة
     if (!entry) renderDictForm(original, null);
+    else if (entry.type === 'verb') renderDictVerbCard(entry, original, key);
     else renderDictEntry(entry);
   }
 
@@ -1024,20 +1192,146 @@ textarea.input { resize: vertical; min-height: 60px; }
     $('#popupDict').querySelectorAll('[data-close]').forEach(b => b.addEventListener('click', closeDictionary));
   }
 
+  /* =========================================================
+     Verb Cards — Manual (structured table)
+     ========================================================= */
+  function renderVerbCard(verb, clickedForm) {
+    const rows = ['io', 'tu', 'lui', 'noi', 'voi', 'loro'];
+    const labels = { io: 'io', tu: 'tu', lui: 'lui/lei', noi: 'noi', voi: 'voi', loro: 'loro' };
+    const clickNorm = Store.normalizeKey(clickedForm);
+
+    const matchForm = (f) => {
+      if (!f) return false;
+      if (Store.normalizeKey(f) === clickNorm) return true;
+      const last = String(f).trim().split(/\s+/).pop();
+      return Store.normalizeKey(last) === clickNorm;
+    };
+
+    const present = verb.present || {};
+    const conjRows = rows.map(r => {
+      const form = present[r] || '';
+      const active = matchForm(form);
+      return `<div class="verb-conj-row${active ? ' active' : ''}">
+        <span class="verb-pronoun">${labels[r]}</span>
+        <span class="verb-form" dir="ltr">${escapeHtml(form) || '—'}</span>
+      </div>`;
+    }).join('');
+
+    let reflexiveHtml = '';
+    if (verb.present_reflexive && verb.reflexive_infinitive) {
+      const rp = verb.present_reflexive;
+      const rRows = rows.map(r => {
+        const form = rp[r] || '';
+        const active = matchForm(form);
+        return `<div class="verb-conj-row${active ? ' active' : ''}">
+          <span class="verb-pronoun">${labels[r]}</span>
+          <span class="verb-form" dir="ltr">${escapeHtml(form) || '—'}</span>
+        </div>`;
+      }).join('');
+      reflexiveHtml = `
+        <div class="verb-reflexive-block">
+          <div class="verb-section-label">🔄 الصيغة المنعكسة: <strong dir="ltr" style="margin-inline-start:6px;">${escapeHtml(verb.reflexive_infinitive)}</strong></div>
+          ${verb.reflexive_meaning ? `<div class="verb-reflexive-meaning">${escapeHtml(verb.reflexive_meaning)}</div>` : ''}
+          <div class="verb-conj-table">${rRows}</div>
+        </div>`;
+    }
+
+    $('#popupDict').innerHTML = `
+      <div class="dict-popup" data-type="verb">
+        <div class="dict-header">
+          <div class="dict-header-left">
+            <span class="dict-type-icon">⚡</span>
+            <span class="dict-type-label">فعل</span>
+          </div>
+          <button class="btn-icon" data-close>✕</button>
+        </div>
+        <div class="dict-header-main">
+          <h4 class="dict-word" dir="ltr">${escapeHtml(verb.infinitive)}</h4>
+        </div>
+        <div class="dict-body">
+          <div class="dict-meaning">${escapeHtml(verb.meaning || '—')}</div>
+          <div class="verb-conj-block">
+            <div class="verb-section-label">📝 المضارع (Presente)</div>
+            <div class="verb-conj-table">${conjRows}</div>
+          </div>
+          ${reflexiveHtml}
+        </div>
+      </div>`;
+
+    $('#popupDict').querySelectorAll('[data-close]').forEach(b => b.addEventListener('click', closeDictionary));
+  }
+
+  /* =========================================================
+     Verb Cards — Dictionary (chips from summary)
+     ========================================================= */
+  function renderDictVerbCard(entry, clickedForm, entryKey) {
+    const clickNorm = Store.normalizeKey(clickedForm);
+    const sections = parseVerbSummary(entry.summary);
+
+    let sectionsHtml = '';
+    if (sections.length > 0) {
+      sectionsHtml = sections.map(section => {
+        const hasMatch = section.forms.some(f => Store.normalizeKey(f) === clickNorm);
+        const chipsHtml = section.forms.map(f => {
+          const active = Store.normalizeKey(f) === clickNorm;
+          return `<span class="verb-form-chip${active ? ' active' : ''}" dir="ltr">${escapeHtml(f)}</span>`;
+        }).join('');
+        return `
+          <div class="verb-tense-block${hasMatch ? ' has-match' : ''}">
+            <div class="verb-tense-label">${escapeHtml(section.label)}</div>
+            <div class="verb-tense-chips">${chipsHtml}</div>
+          </div>`;
+      }).join('');
+    } else if (entry.summary) {
+      sectionsHtml = `<div class="verb-tense-block"><div class="verb-tense-label">📝 التصريفات</div><div class="summary-text">${escapeHtml(entry.summary)}</div></div>`;
+    }
+
+    const lemmaHtml = (entry.lemma && entry.lemma !== entry.word)
+      ? `<div class="dict-lemma" dir="ltr">${escapeHtml(entry.lemma)}</div>` : '';
+
+    $('#popupDict').innerHTML = `
+      <div class="dict-popup" data-type="verb">
+        <div class="dict-header">
+          <div class="dict-header-left">
+            <span class="dict-type-icon">⚡</span>
+            <span class="dict-type-label">فعل</span>
+          </div>
+          <button class="btn-icon" data-close>✕</button>
+        </div>
+        <div class="dict-header-main">
+          <h4 class="dict-word" dir="ltr">${escapeHtml(entry.word || entry.lemma || clickedForm)}</h4>
+          ${lemmaHtml}
+        </div>
+        <div class="dict-body">
+          <div class="dict-meaning">${escapeHtml(entry.meaning || '—')}</div>
+          ${sectionsHtml || '<div style="color:var(--text-soft);text-align:center;padding:12px;font-size:13px;">لا توجد تصريفات محفوظة</div>'}
+          <button class="btn-dict-edit" data-edit>✏️ تعديل البيانات</button>
+        </div>
+      </div>`;
+
+    $('#popupDict').querySelectorAll('[data-close]').forEach(b => b.addEventListener('click', closeDictionary));
+    const editBtn = $('#popupDict').querySelector('[data-edit]');
+    if (editBtn) editBtn.addEventListener('click', () => {
+      const orig = currentDictContext ? currentDictContext.original : (entry.word || clickedForm);
+      renderDictForm(orig, entry);
+    });
+  }
+
+  /* =========================================================
+     Generic Dictionary Entry (non-verb)
+     ========================================================= */
   function renderDictEntry(entry) {
     const type = entry.type || 'word';
     const meta = {
-      verb:        { label: 'فعل',    icon: '⚡', wordClass: '' },
-      preposition: { label: 'حرف جر', icon: '🔗', wordClass: '' },
-      article:     { label: 'أداة',   icon: '📎', wordClass: '' },
-      word:        { label: 'كلمة',   icon: '📖', wordClass: '' }
-    }[type] || { label: 'كلمة', icon: '📖', wordClass: '' };
+      verb:        { label: 'فعل',    icon: '⚡' },
+      preposition: { label: 'حرف جر', icon: '🔗' },
+      article:     { label: 'أداة',   icon: '📎' },
+      word:        { label: 'كلمة',   icon: '📖' }
+    }[type] || { label: 'كلمة', icon: '📖' };
 
     let summaryHtml = '';
     if (entry.summary) {
-      if (type === 'verb') {
-        summaryHtml = `<div class="dict-summary dict-summary-verb"><div class="summary-label">📝 التصريفات (المضارع)</div><div class="summary-text">${escapeHtml(entry.summary)}</div></div>`;
-      } else if (type === 'preposition' || type === 'article') {
+      if (type === 'preposition' || type === 'article') {
         summaryHtml = `<div class="dict-summary dict-summary-usage"><div class="summary-label">💡 القواعد والاستخدام</div><div class="summary-text">${escapeHtml(entry.summary)}</div></div>`;
       } else {
         summaryHtml = `<div class="dict-summary dict-summary-note"><div class="summary-label">📝 ملاحظات</div><div class="summary-text">${escapeHtml(entry.summary)}</div></div>`;
@@ -1045,8 +1339,7 @@ textarea.input { resize: vertical; min-height: 60px; }
     }
 
     const lemmaHtml = entry.lemma && entry.lemma !== entry.word
-      ? `<div class="dict-lemma" dir="ltr">${escapeHtml(entry.lemma)}</div>`
-      : '';
+      ? `<div class="dict-lemma" dir="ltr">${escapeHtml(entry.lemma)}</div>` : '';
 
     $('#popupDict').innerHTML = `
       <div class="dict-popup" data-type="${type}">
@@ -1076,6 +1369,9 @@ textarea.input { resize: vertical; min-height: 60px; }
     });
   }
 
+  /* =========================================================
+     Dictionary Form (add / edit)
+     ========================================================= */
   function renderDictForm(original, existing) {
     const isEdit = !!existing;
     const e = existing || { word: original, lemma: '', type: 'word', meaning: '', summary: '' };
@@ -1108,7 +1404,7 @@ textarea.input { resize: vertical; min-height: 60px; }
           <input class="input" id="dictMeaning" placeholder="المعنى بالعربية" value="${escapeHtml(e.meaning || '')}" />
 
           <label class="dict-field-label">ملخص / تصريفات / قواعد الاستخدام</label>
-          <textarea class="input" id="dictSummary" rows="4" placeholder="مثال للفعل: io mangio, tu mangi, ... — مثال لحرف الجر: يُستخدم لل...">${escapeHtml(e.summary || '')}</textarea>
+          <textarea class="input" id="dictSummary" rows="4" placeholder="مثال للفعل: المضارع: io mangio… | الماضي: io ho mangiato… — لحرف الجر: يُستخدم لل…">${escapeHtml(e.summary || '')}</textarea>
 
           <button class="btn btn-secondary" id="dictSave" style="margin-top:8px;">💾 حفظ في السحابة</button>
         </div>
@@ -1124,7 +1420,6 @@ textarea.input { resize: vertical; min-height: 60px; }
     const lemma = $('#dictLemma').value.trim();
     const meaning = $('#dictMeaning').value.trim();
     const summary = $('#dictSummary').value.trim();
-
     if (!meaning) { toast('أدخل المعنى على الأقل', 'err'); return; }
 
     const { key, original } = currentDictContext;
@@ -1134,9 +1429,11 @@ textarea.input { resize: vertical; min-height: 60px; }
     try {
       await Store.saveDictionaryEntry(key, entry);
       state.dict[key] = Object.assign({ id: key }, entry);
+      buildVerbFormsIndex();  // أعد بناء الفهرس لدعم الأفعال المضافة يدويًا
       setSync('online');
       toast('تم الحفظ في السحابة ✓', 'ok');
-      renderDictEntry(entry);
+      if (type === 'verb') renderDictVerbCard(entry, original, key);
+      else renderDictEntry(entry);
     } catch (err) {
       console.error(err);
       setSync('offline');
@@ -1360,13 +1657,19 @@ textarea.input { resize: vertical; min-height: 60px; }
       Speech.setFallbackHandler(msg => toast(msg, 'warn'));
 
       setBootText('جارٍ تحميل الجمل…');
-      const [user, sentences, dict] = await Promise.all([
+      const [user, sentences, dict, verbs] = await Promise.all([
         Store.loadUser(),
         Store.loadSentences(),
-        Store.loadDictionary()
+        Store.loadDictionary(),
+        Store.loadVerbs()
       ]);
 
-      state.user = user; state.sentences = sentences; state.dict = dict;
+      state.user = user;
+      state.sentences = sentences;
+      state.dict = dict;
+      state.verbs = verbs;
+
+      buildVerbFormsIndex();
       resetDailyCounterIfNeeded();
       bindEvents();
       renderDashboard();
@@ -1375,7 +1678,12 @@ textarea.input { resize: vertical; min-height: 60px; }
       $('#appRoot').hidden = false;
       setSync('online');
 
-      console.info('[Imparo] جاهز. USER_ID =', Store.getUid(), '| الجمل:', sentences.length);
+      const dictVerbsCount = Object.values(dict).filter(e => e && e.type === 'verb').length;
+      console.info('[Imparo v2.0] جاهز. USER_ID =', Store.getUid(),
+        '| الجمل:', sentences.length,
+        '| أفعال يدوية:', verbs.length,
+        '| أفعال قاموس:', dictVerbsCount,
+        '| صيغ مفهرسة:', state.verbFormsIndex.size);
     } catch (err) {
       console.error('[Imparo] فشل التهيئة:', err);
       const msg = err && err.message ? err.message : (err && err.code ? `خطأ (${err.code})` : 'خطأ غير معروف — راجع Console');
