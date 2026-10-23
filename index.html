@@ -135,10 +135,16 @@ textarea.input { resize: vertical; min-height: 60px; }
 .review-progress { flex: 1; display: flex; align-items: center; gap: 10px; }
 .progress-track { flex: 1; height: 6px; background: var(--border); border-radius: 999px; overflow: hidden; }
 .progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--primary), var(--easy)); border-radius: 999px; transition: width .35s ease; }
-#progressText { font-size: 13px; color: var(--text-soft); font-weight: 700; white-space: nowrap; }
+#progressText { font-size: 12.5px; color: var(--text-soft); font-weight: 700; white-space: nowrap; }
 .star-btn { font-size: 20px; transition: transform .15s ease, color .15s ease; }
 .star-btn.on { color: #f0a500; filter: drop-shadow(0 0 4px rgba(240,165,0,.35)); }
 .star-btn:active { transform: scale(.9); }
+.star-btn.pulse { animation: starPulse .4s ease; }
+@keyframes starPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.4); }
+  100% { transform: scale(1); }
+}
 .skip-header-btn { font-size: 18px; }
 .card-stage { perspective: 1400px; margin-bottom: 18px; }
 .flip-card { cursor: pointer; }
@@ -161,8 +167,9 @@ textarea.input { resize: vertical; min-height: 60px; }
 
 .rating-row { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 8px; opacity: 0; pointer-events: none; transition: opacity .3s ease; }
 .rating-row.is-visible { opacity: 1; pointer-events: auto; }
-.btn-rating { display: flex; flex-direction: column; align-items: center; gap: 5px; padding: 13px 5px; border: none; border-radius: var(--radius); cursor: pointer; font-family: inherit; font-weight: 700; font-size: 12.5px; transition: transform .12s ease, box-shadow .2s ease; box-shadow: var(--shadow-sm); }
-.btn-rating:active { transform: scale(.96); }
+.btn-rating { display: flex; flex-direction: column; align-items: center; gap: 5px; padding: 13px 5px; border: none; border-radius: var(--radius); cursor: pointer; font-family: inherit; font-weight: 700; font-size: 12.5px; transition: transform .12s ease, box-shadow .2s ease, opacity .2s ease; box-shadow: var(--shadow-sm); }
+.btn-rating:active:not(:disabled) { transform: scale(.96); }
+.btn-rating:disabled { opacity: .4; cursor: not-allowed; box-shadow: none; }
 .rating-emoji { font-size: 20px; }
 .btn-hard { background: var(--hard-soft); color: #a94633; }
 .btn-medium { background: var(--medium-soft); color: #a76b0f; }
@@ -488,7 +495,7 @@ textarea.input { resize: vertical; min-height: 60px; }
 
 <script>
 /* =========================================================
-   Imparo — Single-File App (v2.3 — Unlimited Skip + Rotation)
+   Imparo — Single-File App (v2.4 — Bug fixes + UX polish)
    ========================================================= */
 (function () {
   'use strict';
@@ -704,6 +711,7 @@ textarea.input { resize: vertical; min-height: 60px; }
      ========================================================= */
   const state = {
     user: null, sentences: [], dict: {},
+    sentencesById: new Map(),   // ⭐ v2.4: O(1) lookup
     verbs: [], verbFormsIndex: new Map(),
     // طابور المراجعة: queue[0] هي البطاقة الحالية
     queue: [],
@@ -713,7 +721,10 @@ textarea.input { resize: vertical; min-height: 60px; }
     skipCounts: new Map(),     // id البطاقة → كم مرة تخطاها المستخدم في هذه الجلسة
     flipped: false,
     session: { easy: 0, medium: 0, hard: 0 },
-    listMode: null, busy: false
+    listMode: null,
+    // ⭐ v2.4: قفل عام يمنع النقر المزدوج على أزرار التقييم و quickAdd
+    // (يُحرَّر بـ setTimeout قصير لمنع النقر المزدوج دون تجميد الواجهة)
+    busy: false
   };
 
   const $ = sel => document.querySelector(sel);
@@ -947,6 +958,7 @@ textarea.input { resize: vertical; min-height: 60px; }
     try {
       const saved = await Store.addSentence(payload);
       state.sentences.push(saved);
+      state.sentencesById.set(saved.id, saved);   // ⭐ v2.4
       $('#inputItalian').value = ''; $('#inputArabic').value = '';
       toast('تمت إضافة الجملة إلى السحابة ✓', 'ok');
       renderDashboard(); $('#inputItalian').focus(); setSync('online');
@@ -955,7 +967,7 @@ textarea.input { resize: vertical; min-height: 60px; }
   }
 
   /* =========================================================
-     Review Flow — طابور دوّار (v2.3)
+     Review Flow — طابور دوّار (v2.4)
      ========================================================= */
   function startReview(queueOrMode) {
     let queue;
@@ -970,18 +982,27 @@ textarea.input { resize: vertical; min-height: 60px; }
     state.skippedCount = 0;
     state.skipCounts = new Map();
     state.session = { easy: 0, medium: 0, hard: 0 };
+    state.busy = false;   // ⭐ v2.4: تأكيد تحرير القفل عند بدء جلسة جديدة
     showView('review');
     renderCard();
   }
 
-  function updateStarButton() {
+  function updateStarButton(silent = false) {
     const btn = $('#btnStarCurrent');
     if (!btn) return;
     const s = state.queue[0];
     if (!s) { btn.textContent = '☆'; btn.classList.remove('on'); return; }
     const starred = !!s.is_starred;
+    const wasOn = btn.classList.contains('on');
     btn.textContent = starred ? '⭐' : '☆';
     btn.classList.toggle('on', starred);
+    // ⭐ v2.4: نبضة بصرية عند التمييز
+    if (!silent && starred && !wasOn) {
+      btn.classList.remove('pulse');
+      void btn.offsetWidth;   // force reflow لإعادة تشغيل الأنيميشن
+      btn.classList.add('pulse');
+      setTimeout(() => btn.classList.remove('pulse'), 420);
+    }
   }
 
   function updateSkipHeaderButton() {
@@ -990,6 +1011,10 @@ textarea.input { resize: vertical; min-height: 60px; }
     const isLast = state.queue.length <= 1;
     btn.disabled = isLast;
     btn.title = isLast ? 'هذه آخر بطاقة — قيّمها' : 'تخطي البطاقة (تأجيل لآخر الجلسة)';
+
+    // ⭐ v2.4: تعطيل زر التخطي في صف التقييم أيضًا
+    const rowSkipBtn = $('#ratingRow .btn-skip');
+    if (rowSkipBtn) rowSkipBtn.disabled = isLast;
   }
 
   function renderCard() {
@@ -1007,10 +1032,11 @@ textarea.input { resize: vertical; min-height: 60px; }
     const total = state.initialQueue.length;
     const done = state.ratedCount;
     $('#progressFill').style.width = (done / total * 100) + '%';
+    // ⭐ v2.4: توضيح "المُقيَّم" بـ ✅
     const skipSuffix = state.skippedCount ? ` · ⏭️ ${state.skippedCount}` : '';
-    $('#progressText').textContent = `${done} / ${total}${skipSuffix}`;
+    $('#progressText').textContent = `✅ ${done}/${total}${skipSuffix}`;
 
-    updateStarButton();
+    updateStarButton(true);   // silent — لا نبضة عند تغيير البطاقة
     updateSkipHeaderButton();
     Speech.speak(s.italian);
   }
@@ -1061,6 +1087,7 @@ textarea.input { resize: vertical; min-height: 60px; }
   }
 
   async function rateCard(rating) {
+    // ⭐ v2.4 (إصلاح): قفل يمنع النقر المزدوج من تقييم بطاقتين متتاليتين
     if (state.busy) return;
     const s = state.queue[0];
     if (!s) return;
@@ -1071,7 +1098,9 @@ textarea.input { resize: vertical; min-height: 60px; }
       return;
     }
 
-    // مسار التقييم الطبيعي — SRS يُطبَّق كما هو دون تعديل
+    // تقييم طبيعي — نفعّل القفل فورًا ونجعله قصيرًا (300ms)
+    state.busy = true;
+
     let patch;
     if (rating === 'easy') patch = SRS.applyEasy(s);
     else if (rating === 'medium') patch = SRS.applyMedium(s);
@@ -1096,6 +1125,9 @@ textarea.input { resize: vertical; min-height: 60px; }
 
     if (state.queue.length === 0) finishReview();
     else renderCard();
+
+    // ⭐ v2.4: تحرير القفل بعد 300ms (يمنع النقر المزدوج دون تجميد)
+    setTimeout(() => { state.busy = false; }, 300);
   }
 
   function getMostSkippedCard() {
@@ -1104,7 +1136,7 @@ textarea.input { resize: vertical; min-height: 60px; }
       if (count > bestCount) { bestCount = count; bestId = id; }
     });
     if (!bestId || bestCount === 0) return null;
-    const sentence = state.sentences.find(s => s.id === bestId);
+    const sentence = state.sentencesById.get(bestId) || state.sentences.find(s => s.id === bestId);
     return sentence ? { sentence, count: bestCount } : null;
   }
 
@@ -1112,7 +1144,7 @@ textarea.input { resize: vertical; min-height: 60px; }
     const result = [];
     state.skipCounts.forEach((count, id) => {
       if (count >= threshold) {
-        const s = state.sentences.find(x => x.id === id);
+        const s = state.sentencesById.get(id) || state.sentences.find(x => x.id === id);
         if (s) result.push(s);
       }
     });
@@ -1122,7 +1154,7 @@ textarea.input { resize: vertical; min-height: 60px; }
   function finishReview() {
     const total = state.initialQueue.length;
     $('#progressFill').style.width = '100%';
-    $('#progressText').textContent = `${total} / ${total} · ⏭️ ${state.skippedCount}`;
+    $('#progressText').textContent = `✅ ${total}/${total}${state.skippedCount ? ' · ⏭️ ' + state.skippedCount : ''}`;
 
     const { easy, medium, hard } = state.session;
     const skipped = state.skippedCount;
@@ -1168,7 +1200,7 @@ textarea.input { resize: vertical; min-height: 60px; }
      Star Toggle
      ========================================================= */
   async function toggleStar(id) {
-    const s = state.sentences.find(x => x.id === id);
+    const s = state.sentencesById.get(id) || state.sentences.find(x => x.id === id);
     if (!s) return;
     s.is_starred = !s.is_starred;
     setSync('syncing');
@@ -1185,10 +1217,13 @@ textarea.input { resize: vertical; min-height: 60px; }
   }
 
   /* =========================================================
-     Edit Sentence Popup
+     Edit Sentence Popup — v2.4: dirty check
      ========================================================= */
   function openEditPopup(sentence) {
     if (!sentence) return;
+    const originalItalian = sentence.italian || '';
+    const originalArabic = sentence.arabic || '';
+
     $('#popupOverlay').classList.add('is-open');
     $('#popupDict').innerHTML = `
       <div class="dict-popup" data-type="form">
@@ -1201,13 +1236,31 @@ textarea.input { resize: vertical; min-height: 60px; }
         </div>
         <div class="dict-body">
           <label class="dict-field-label">الجملة الإيطالية</label>
-          <input class="input" id="editItalian" dir="ltr" value="${escapeHtml(sentence.italian)}" />
+          <input class="input" id="editItalian" dir="ltr" value="${escapeHtml(originalItalian)}" />
           <label class="dict-field-label">الترجمة العربية</label>
-          <textarea class="input" id="editArabic" rows="2">${escapeHtml(sentence.arabic)}</textarea>
+          <textarea class="input" id="editArabic" rows="2">${escapeHtml(originalArabic)}</textarea>
           <button class="btn btn-secondary" id="editSave" style="margin-top:8px;">💾 حفظ التعديلات</button>
         </div>
       </div>`;
-    $('#popupDict').querySelectorAll('[data-close]').forEach(b => b.addEventListener('click', closeDictionary));
+
+    // ⭐ v2.4: تأكيد قبل إغلاق النافذة عند وجود تعديلات غير محفوظة
+    const tryClose = () => {
+      const curItalian = ($('#editItalian')?.value || '').trim();
+      const curArabic = ($('#editArabic')?.value || '').trim();
+      const isDirty = (curItalian !== originalItalian.trim()) || (curArabic !== originalArabic.trim());
+      if (isDirty && !confirm('لديك تعديلات غير محفوظة. إغلاق دون حفظ؟')) return;
+      closeDictionary();
+    };
+
+    $('#popupDict').querySelectorAll('[data-close]').forEach(b => b.addEventListener('click', tryClose));
+
+    // جعل النقر على الخلفية يستخدم نفس الحماية
+    const overlay = $('#popupOverlay');
+    const backdropHandler = (e) => {
+      if (e.target === overlay) { e.stopPropagation(); tryClose(); }
+    };
+    // نستخدم { once: true } مع إعادة تسجيله في كل مرة
+    overlay.addEventListener('click', backdropHandler, { once: true });
 
     $('#editSave').addEventListener('click', async () => {
       const italian = $('#editItalian').value.trim();
@@ -1223,7 +1276,6 @@ textarea.input { resize: vertical; min-height: 60px; }
         closeDictionary();
         if (state.listMode) renderList();
         renderDashboard();
-        // إذا كانت البطاقة الحالية هي نفسها المعدَّلة في المراجعة
         if ($('#view-review').classList.contains('is-active') && state.queue[0] && state.queue[0].id === sentence.id) {
           renderCard();
         }
@@ -1255,7 +1307,10 @@ textarea.input { resize: vertical; min-height: 60px; }
   async function openDictionary(original) {
     const key = Store.normalizeKey(original);
     if (!key) return;
-    currentDictContext = { key, original };
+
+    // ⭐ v2.4: حماية من السباق — نحتفظ بسياق هذا الاستدعاء ونقارنه بعد await
+    const thisContext = { key, original };
+    currentDictContext = thisContext;
 
     if (state.verbFormsIndex.has(key)) {
       const found = state.verbFormsIndex.get(key);
@@ -1270,11 +1325,19 @@ textarea.input { resize: vertical; min-height: 60px; }
 
     let entry = normalizeEntry(state.dict[key]);
     if (!entry) {
+      let fresh = null;
       try {
-        const fresh = await Store.getDictionaryEntry(key);
-        const norm = normalizeEntry(fresh);
-        if (norm) { state.dict[key] = Object.assign({ id: key }, norm); entry = norm; }
+        fresh = await Store.getDictionaryEntry(key);
       } catch (e) { console.warn('[Dict] fetch:', e); }
+
+      // ⭐ v2.4: لو تغيّر السياق أثناء await (نقر المستخدم كلمة أخرى) — نتجاهل الرد
+      if (currentDictContext !== thisContext) {
+        console.info('[Dict] stale response ignored (context changed)');
+        return;
+      }
+
+      const norm = normalizeEntry(fresh);
+      if (norm) { state.dict[key] = Object.assign({ id: key }, norm); entry = norm; }
     }
 
     if (!entry) renderDictForm(original, null);
@@ -1633,7 +1696,7 @@ textarea.input { resize: vertical; min-height: 60px; }
      List Actions
      ========================================================= */
   async function updateAndRefresh(id, patch) {
-    const s = state.sentences.find(x => x.id === id);
+    const s = state.sentencesById.get(id) || state.sentences.find(x => x.id === id);
     if (!s) return;
     Object.assign(s, patch);
     setSync('syncing');
@@ -1642,12 +1705,14 @@ textarea.input { resize: vertical; min-height: 60px; }
     renderList(); renderDashboard();
   }
   async function markCorrect(id) {
-    const s = state.sentences.find(x => x.id === id); if (!s) return;
+    const s = state.sentencesById.get(id) || state.sentences.find(x => x.id === id);
+    if (!s) return;
     toast('خرجت من قائمة الصعبة ✓', 'ok');
     await updateAndRefresh(id, SRS.applyCorrectFromMistakes(s));
   }
   async function markWrong(id) {
-    const s = state.sentences.find(x => x.id === id); if (!s) return;
+    const s = state.sentencesById.get(id) || state.sentences.find(x => x.id === id);
+    if (!s) return;
     toast('ستبقى في القائمة الصعبة');
     await updateAndRefresh(id, SRS.applyWrongFromMistakes(s));
   }
@@ -1656,7 +1721,12 @@ textarea.input { resize: vertical; min-height: 60px; }
   async function removeSentence(id) {
     if (!confirm('حذف الجملة نهائيًا من Firebase؟')) return;
     setSync('syncing');
-    try { await Store.deleteSentence(id); state.sentences = state.sentences.filter(x => x.id !== id); setSync('online'); toast('تم الحذف'); }
+    try {
+      await Store.deleteSentence(id);
+      state.sentences = state.sentences.filter(x => x.id !== id);
+      state.sentencesById.delete(id);   // ⭐ v2.4
+      setSync('online'); toast('تم الحذف');
+    }
     catch (err) { console.error(err); setSync('offline'); toast('تعذّر الحذف', 'err'); }
     renderList(); renderDashboard();
   }
@@ -1711,7 +1781,6 @@ textarea.input { resize: vertical; min-height: 60px; }
     });
     $$('.btn-rating').forEach(b => b.addEventListener('click', e => { e.stopPropagation(); rateCard(b.dataset.rating); }));
 
-    // ⭐ تخطي دائم من رأس المراجعة (يعمل قبل وبعد قلب البطاقة)
     $('#btnSkipHeader').addEventListener('click', e => {
       e.stopPropagation();
       skipCard();
@@ -1728,7 +1797,14 @@ textarea.input { resize: vertical; min-height: 60px; }
     $('#btnBackHome').addEventListener('click', () => { showView('dashboard'); renderDashboard(); });
     $('#btnBackList').addEventListener('click', () => { showView('dashboard'); renderDashboard(); });
 
-    $('#popupOverlay').addEventListener('click', e => { if (e.target === $('#popupOverlay')) closeDictionary(); });
+    // backdrop للنوافذ العامة (باستثناء نافذة التعديل التي تفرض حمايتها الخاصة)
+    $('#popupOverlay').addEventListener('click', e => {
+      if (e.target !== $('#popupOverlay')) return;
+      // إن كانت نافذة تعديل مفتوحة، زر الإغلاق الخاص بها يتولى المهمة
+      const closeBtn = $('#popupDict').querySelector('[data-close]');
+      if (closeBtn) closeBtn.click();
+      else closeDictionary();
+    });
 
     setInterval(() => { if ($('#view-dashboard').classList.contains('is-active')) renderDashboard(); }, 60 * 1000);
 
@@ -1766,6 +1842,7 @@ textarea.input { resize: vertical; min-height: 60px; }
 
       state.user = user;
       state.sentences = sentences;
+      state.sentencesById = new Map(sentences.map(s => [s.id, s]));   // ⭐ v2.4
       state.dict = dict;
       state.verbs = verbs;
 
@@ -1779,7 +1856,7 @@ textarea.input { resize: vertical; min-height: 60px; }
       setSync('online');
 
       const dictVerbsCount = Object.values(dict).filter(e => e && e.type === 'verb').length;
-      console.info('[Imparo v2.3] جاهز. USER_ID =', Store.getUid(),
+      console.info('[Imparo v2.4] جاهز. USER_ID =', Store.getUid(),
         '| الجمل:', sentences.length,
         '| مميزة:', sentences.filter(s => s.is_starred).length,
         '| أفعال يدوية:', verbs.length,
