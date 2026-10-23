@@ -7,9 +7,6 @@
 <title>Imparo — مراجعة الإيطالية</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='45' fill='%232d7a68'/><text x='50' y='68' font-size='60' text-anchor='middle' fill='white' font-family='Georgia'>I</text></svg>">
 <style>
-/* =========================================================
-   Imparo — Single-File Styles
-   ========================================================= */
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 [hidden] { display: none !important; }
 
@@ -19,6 +16,7 @@
   --easy: #4caf7d; --easy-soft: #e6f5ee;
   --medium: #eba827; --medium-soft: #fdf3e0;
   --hard: #e76f51; --hard-soft: #fbe8e2;
+  --skip: #8a9995;
   --text: #23302c; --text-soft: #6b7a76; --border: #ece8e1;
   --shadow-sm: 0 1px 3px rgba(30,45,40,.06);
   --shadow-lg: 0 10px 30px rgba(30,45,40,.14);
@@ -33,7 +31,6 @@ html, body {
 }
 body { min-height: 100vh; }
 
-/* ===== Boot / Error ===== */
 .boot-screen, .error-screen {
   position: fixed; inset: 0; z-index: 999; background: var(--bg);
   display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -50,7 +47,6 @@ body { min-height: 100vh; }
 .error-screen p { color: var(--text-soft); font-size: 14px; max-width: 340px; line-height: 1.6; white-space: pre-wrap; }
 .error-screen .btn { max-width: 240px; }
 
-/* ===== Layout ===== */
 .app { max-width: 480px; margin: 0 auto; min-height: 100vh; display: flex; flex-direction: column; background: var(--bg); }
 .app-header {
   position: sticky; top: 0; z-index: 20;
@@ -80,7 +76,6 @@ body { min-height: 100vh; }
 .view.is-active { display: block; }
 @keyframes fadeUp { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
 
-/* ===== Stats ===== */
 .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
 .stat-card {
   background: var(--surface); border-radius: var(--radius);
@@ -90,7 +85,6 @@ body { min-height: 100vh; }
 .stat-value { font-size: 24px; font-weight: 800; color: var(--primary-dark); line-height: 1.2; }
 .stat-label { font-size: 12px; color: var(--text-soft); margin-top: 2px; }
 
-/* ===== Buttons ===== */
 .btn {
   border: none; border-radius: var(--radius);
   padding: 14px 18px; font-family: inherit; font-size: 15px; font-weight: 700;
@@ -105,13 +99,13 @@ body { min-height: 100vh; }
 .btn-primary:disabled { background: #b9c7c3; box-shadow: none; }
 .btn-secondary { background: var(--primary-soft); color: var(--primary-dark); }
 .btn-secondary:hover:not(:disabled) { background: #d5ebe4; }
-.btn-icon { background: transparent; border: none; width: 38px; height: 38px; border-radius: 50%; font-size: 17px; color: var(--text); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; transition: background .15s ease; }
-.btn-icon:hover { background: rgba(0,0,0,.06); }
+.btn-icon { background: transparent; border: none; width: 38px; height: 38px; border-radius: 50%; font-size: 17px; color: var(--text); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; transition: background .15s ease, opacity .2s ease; }
+.btn-icon:hover:not(:disabled) { background: rgba(0,0,0,.06); }
+.btn-icon:disabled { opacity: .35; cursor: not-allowed; }
 .btn-hero { padding: 20px 22px; border-radius: var(--radius-lg); font-size: 16px; justify-content: space-between; margin-bottom: 12px; }
 .btn-hero-count { background: rgba(255,255,255,.25); border-radius: 999px; padding: 3px 12px; font-size: 14px; font-weight: 800; }
 .btn-starred { padding: 14px 18px; border-radius: var(--radius); font-size: 14.5px; justify-content: space-between; margin-bottom: 18px; }
 
-/* ===== Card / Input ===== */
 .card { background: var(--surface); border-radius: var(--radius); padding: 18px; box-shadow: var(--shadow-sm); border: 1px solid var(--border); margin-bottom: 16px; }
 .section-title { font-size: 14px; font-weight: 700; color: var(--text-soft); margin-bottom: 12px; }
 .input {
@@ -123,7 +117,6 @@ body { min-height: 100vh; }
 .input:focus { border-color: var(--primary); background: #fff; }
 textarea.input { resize: vertical; min-height: 60px; }
 
-/* ===== Lists Nav ===== */
 .lists-nav { display: flex; flex-direction: column; gap: 8px; }
 .list-btn {
   display: flex; align-items: center; gap: 12px; width: 100%;
@@ -138,8 +131,7 @@ textarea.input { resize: vertical; min-height: 60px; }
 .list-count { background: var(--primary-soft); color: var(--primary-dark); border-radius: 999px; padding: 2px 10px; font-size: 13px; font-weight: 700; min-width: 30px; text-align: center; }
 .list-btn[data-list="starred"] .list-count { background: #fff5d6; color: #a77a00; }
 
-/* ===== Review ===== */
-.review-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+.review-header { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
 .review-progress { flex: 1; display: flex; align-items: center; gap: 10px; }
 .progress-track { flex: 1; height: 6px; background: var(--border); border-radius: 999px; overflow: hidden; }
 .progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--primary), var(--easy)); border-radius: 999px; transition: width .35s ease; }
@@ -147,6 +139,7 @@ textarea.input { resize: vertical; min-height: 60px; }
 .star-btn { font-size: 20px; transition: transform .15s ease, color .15s ease; }
 .star-btn.on { color: #f0a500; filter: drop-shadow(0 0 4px rgba(240,165,0,.35)); }
 .star-btn:active { transform: scale(.9); }
+.skip-header-btn { font-size: 18px; }
 .card-stage { perspective: 1400px; margin-bottom: 18px; }
 .flip-card { cursor: pointer; }
 .flip-card-inner { display: grid; transition: transform .6s cubic-bezier(.4,.2,.2,1); transform-style: preserve-3d; }
@@ -165,16 +158,17 @@ textarea.input { resize: vertical; min-height: 60px; }
 .btn-speak { background: var(--primary-soft); color: var(--primary-dark); border: none; width: 52px; height: 52px; border-radius: 50%; font-size: 22px; cursor: pointer; box-shadow: var(--shadow-sm); transition: transform .15s ease, background .15s ease; }
 .btn-speak:active { transform: scale(.94); background: #d1e9e0; }
 .hint { font-size: 12.5px; color: var(--text-soft); }
-.rating-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; opacity: 0; pointer-events: none; transition: opacity .3s ease; }
+
+.rating-row { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 8px; opacity: 0; pointer-events: none; transition: opacity .3s ease; }
 .rating-row.is-visible { opacity: 1; pointer-events: auto; }
-.btn-rating { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 14px 8px; border: none; border-radius: var(--radius); cursor: pointer; font-family: inherit; font-weight: 700; font-size: 13.5px; transition: transform .12s ease, box-shadow .2s ease; box-shadow: var(--shadow-sm); }
+.btn-rating { display: flex; flex-direction: column; align-items: center; gap: 5px; padding: 13px 5px; border: none; border-radius: var(--radius); cursor: pointer; font-family: inherit; font-weight: 700; font-size: 12.5px; transition: transform .12s ease, box-shadow .2s ease; box-shadow: var(--shadow-sm); }
 .btn-rating:active { transform: scale(.96); }
-.rating-emoji { font-size: 22px; }
+.rating-emoji { font-size: 20px; }
 .btn-hard { background: var(--hard-soft); color: #a94633; }
 .btn-medium { background: var(--medium-soft); color: #a76b0f; }
 .btn-easy { background: var(--easy-soft); color: #2c8159; }
+.btn-skip { background: var(--surface-2); color: var(--skip); border: 1.5px dashed #cfd6d3; box-shadow: none; }
 
-/* ===== Summary ===== */
 #view-summary { text-align: center; padding-top: 20px; }
 .summary-emoji { font-size: 64px; margin-bottom: 8px; animation: pop .5s ease; }
 @keyframes pop { 0%{transform:scale(0);} 60%{transform:scale(1.15);} 100%{transform:scale(1);} }
@@ -187,9 +181,9 @@ textarea.input { resize: vertical; min-height: 60px; }
 .summary-item.easy .v { color: var(--easy); }
 .summary-item.medium .v { color: var(--medium); }
 .summary-item.hard .v { color: var(--hard); }
+.summary-item.skip .v { color: var(--skip); }
 .summary-item.total .v { color: var(--primary-dark); }
 
-/* ===== List View ===== */
 .list-header { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
 .list-header h2 { font-size: 18px; font-weight: 800; }
 .list-actions { display: flex; gap: 8px; margin-bottom: 12px; }
@@ -217,7 +211,6 @@ textarea.input { resize: vertical; min-height: 60px; }
 .empty-state { text-align: center; color: var(--text-soft); padding: 40px 12px; font-size: 14px; }
 .empty-state .em { font-size: 40px; display: block; margin-bottom: 10px; }
 
-/* ===== Future Days ===== */
 .future-card { margin-bottom: 16px; }
 .future-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
 .future-btn {
@@ -233,7 +226,6 @@ textarea.input { resize: vertical; min-height: 60px; }
 .future-count { font-size: 18px; font-weight: 800; color: var(--primary-dark); line-height: 1.2; }
 .future-label { font-size: 11.5px; font-weight: 600; }
 
-/* ===== Popup Overlay ===== */
 .popup-overlay {
   position: fixed; inset: 0; z-index: 100;
   background: rgba(20,30,28,.45); backdrop-filter: blur(3px);
@@ -264,33 +256,14 @@ textarea.input { resize: vertical; min-height: 60px; }
 .dict-type-label {
   padding: 3px 11px; border-radius: 999px;
   background: var(--surface); border: 1px solid var(--border);
-  font-size: 11.5px; font-weight: 700;
-  letter-spacing: .3px;
+  font-size: 11.5px; font-weight: 700; letter-spacing: .3px;
 }
 .dict-header-main { padding: 14px 18px 6px; text-align: center; }
-.dict-word {
-  font-size: 26px; font-weight: 800; color: var(--text);
-  font-family: "Georgia", serif; margin-bottom: 4px; line-height: 1.2;
-}
-.dict-lemma {
-  font-size: 13.5px; color: var(--text-soft);
-  font-style: italic; font-family: "Georgia", serif;
-}
+.dict-word { font-size: 26px; font-weight: 800; color: var(--text); font-family: "Georgia", serif; margin-bottom: 4px; line-height: 1.2; }
+.dict-lemma { font-size: 13.5px; color: var(--text-soft); font-style: italic; font-family: "Georgia", serif; }
 .dict-body { padding: 8px 18px 18px; }
-.dict-meaning {
-  font-size: 17px; font-weight: 600;
-  padding: 12px 14px;
-  background: var(--surface-2);
-  border-radius: var(--radius-sm);
-  margin-bottom: 12px;
-  text-align: center;
-  line-height: 1.6;
-}
-.dict-summary {
-  padding: 12px 14px;
-  border-radius: var(--radius-sm);
-  margin-bottom: 12px;
-}
+.dict-meaning { font-size: 17px; font-weight: 600; padding: 12px 14px; background: var(--surface-2); border-radius: var(--radius-sm); margin-bottom: 12px; text-align: center; line-height: 1.6; }
+.dict-summary { padding: 12px 14px; border-radius: var(--radius-sm); margin-bottom: 12px; }
 .summary-label { font-size: 12px; font-weight: 800; margin-bottom: 6px; opacity: .9; letter-spacing: .2px; }
 .summary-text { font-size: 14px; line-height: 1.7; white-space: pre-wrap; word-break: break-word; }
 
@@ -364,7 +337,6 @@ textarea.input { resize: vertical; min-height: 60px; }
 .verb-form-chip { background: #fff; border: 1.5px solid #d0dff5; border-radius: 8px; padding: 4px 9px; font-family: "Georgia", serif; font-size: 13px; font-weight: 600; color: #2a4cb5; direction: ltr; transition: all .15s ease; }
 .verb-form-chip.active { background: #4a6ee0; border-color: #4a6ee0; color: #fff; font-weight: 800; box-shadow: 0 2px 8px rgba(74,110,224,.3); transform: scale(1.05); }
 
-/* ===== Toast ===== */
 .toast {
   position: fixed; bottom: 24px; left: 50%;
   transform: translateX(-50%) translateY(20px);
@@ -410,7 +382,6 @@ textarea.input { resize: vertical; min-height: 60px; }
 
   <main class="app-main">
 
-    <!-- ===== Dashboard ===== -->
     <section id="view-dashboard" class="view is-active">
       <div class="stats-grid">
         <div class="stat-card"><div class="stat-value" id="statDue">0</div><div class="stat-label">مستحقة اليوم</div></div>
@@ -450,7 +421,6 @@ textarea.input { resize: vertical; min-height: 60px; }
       </div>
     </section>
 
-    <!-- ===== Review ===== -->
     <section id="view-review" class="view">
       <div class="review-header">
         <button class="btn-icon" id="btnExitReview" aria-label="خروج">✕</button>
@@ -458,6 +428,7 @@ textarea.input { resize: vertical; min-height: 60px; }
           <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
           <span id="progressText">0 / 0</span>
         </div>
+        <button class="btn-icon skip-header-btn" id="btnSkipHeader" title="تخطي البطاقة" aria-label="تخطي">⏭️</button>
         <button class="btn-icon star-btn" id="btnStarCurrent" title="تمييز البطاقة" aria-label="تمييز">☆</button>
       </div>
 
@@ -481,19 +452,19 @@ textarea.input { resize: vertical; min-height: 60px; }
         <button class="btn-rating btn-hard" data-rating="hard"><span class="rating-emoji">😰</span><span class="rating-label">صعب</span></button>
         <button class="btn-rating btn-medium" data-rating="medium"><span class="rating-emoji">🙂</span><span class="rating-label">متوسط</span></button>
         <button class="btn-rating btn-easy" data-rating="easy"><span class="rating-emoji">😎</span><span class="rating-label">سهل</span></button>
+        <button class="btn-rating btn-skip" data-rating="skip"><span class="rating-emoji">⏭️</span><span class="rating-label">تخطي</span></button>
       </div>
     </section>
 
-    <!-- ===== Summary ===== -->
     <section id="view-summary" class="view">
       <div class="summary-emoji">🎉</div>
       <h2 class="summary-title">أحسنت!</h2>
       <p class="summary-sub" id="summarySub">أكملت مراجعة اليوم</p>
       <div class="summary-stats" id="summaryStats"></div>
+      <button class="btn btn-secondary" id="btnReviewHard" style="margin-bottom:10px; display:none;">🔁 أعد مراجعة الأصعب</button>
       <button class="btn btn-primary" id="btnBackHome">العودة للرئيسية</button>
     </section>
 
-    <!-- ===== List ===== -->
     <section id="view-list" class="view">
       <div class="list-header">
         <button class="btn-icon" id="btnBackList" aria-label="رجوع">←</button>
@@ -517,14 +488,11 @@ textarea.input { resize: vertical; min-height: 60px; }
 
 <script>
 /* =========================================================
-   Imparo — Single-File App (v2.1 — Edit + Starred + Future)
+   Imparo — Single-File App (v2.3 — Unlimited Skip + Rotation)
    ========================================================= */
 (function () {
   'use strict';
 
-  /* =========================================================
-     CONFIG
-     ========================================================= */
   const FIREBASE_CONFIG = {
     apiKey:            "AIzaSyA0Ca2fqu7Pw80sKhXVuqaz5h3UIaau_LQ",
     authDomain:        "imparo-53eea.firebaseapp.com",
@@ -536,7 +504,7 @@ textarea.input { resize: vertical; min-height: 60px; }
   const USER_ID = "ahmed_imparo_53eea_x7k9m2p4q8w3_admin";
 
   /* =========================================================
-     SRS (بدون تغيير)
+     SRS — لم يُمسّ إطلاقًا
      ========================================================= */
   const SRS = (function () {
     const REVIEW_HOUR = 10;
@@ -592,9 +560,6 @@ textarea.input { resize: vertical; min-height: 60px; }
     return { REVIEW_HOUR, startOfReviewDay, reviewDayKey, scheduleIn, isDue, applyEasy, applyMedium, applyHard, applyCorrectFromMistakes, applyWrongFromMistakes };
   })();
 
-  /* =========================================================
-     Speech
-     ========================================================= */
   const Speech = (function () {
     const supported = 'speechSynthesis' in window;
     let voices = [], voicesReady = false, fallbackHandler = null, warnedOnce = false, cachedVoice = null;
@@ -641,9 +606,6 @@ textarea.input { resize: vertical; min-height: 60px; }
     return { speak, setFallbackHandler, cancel };
   })();
 
-  /* =========================================================
-     Store
-     ========================================================= */
   const Store = (function () {
     let db = null, uid = null, ready = false;
     function ensureReady() { if (!ready) throw new Error('Store غير مهيأ.'); }
@@ -743,7 +705,13 @@ textarea.input { resize: vertical; min-height: 60px; }
   const state = {
     user: null, sentences: [], dict: {},
     verbs: [], verbFormsIndex: new Map(),
-    queue: [], qIndex: 0, flipped: false,
+    // طابور المراجعة: queue[0] هي البطاقة الحالية
+    queue: [],
+    initialQueue: [],          // لقطة من الطابور الأصلي لحساب الإجمالي
+    ratedCount: 0,             // عدد البطاقات المُقيَّمة (المكتملة)
+    skippedCount: 0,           // عدد مرات التخطي (إجراءات، قد تتكرر لنفس البطاقة)
+    skipCounts: new Map(),     // id البطاقة → كم مرة تخطاها المستخدم في هذه الجلسة
+    flipped: false,
     session: { easy: 0, medium: 0, hard: 0 },
     listMode: null, busy: false
   };
@@ -773,11 +741,7 @@ textarea.input { resize: vertical; min-height: 60px; }
   const dueToday = () => state.sentences.filter(s => SRS.isDue(s));
   const mistakesList = () => state.sentences.filter(s => s.in_mistake_bank && !s.is_frozen);
   const frozenList = () => state.sentences.filter(s => s.is_frozen);
-  const starredList = () => state.sentences.filter(s => s.is_starred && !s.is_frozen);
 
-  /* =========================================================
-     Future Days (معاينة مبكرة) — منطق مستقل تمامًا عن SRS
-     ========================================================= */
   function getFutureDaySentences(offsetDays) {
     const now = new Date();
     const start = new Date(now);
@@ -991,7 +955,7 @@ textarea.input { resize: vertical; min-height: 60px; }
   }
 
   /* =========================================================
-     Review Flow
+     Review Flow — طابور دوّار (v2.3)
      ========================================================= */
   function startReview(queueOrMode) {
     let queue;
@@ -1001,23 +965,35 @@ textarea.input { resize: vertical; min-height: 60px; }
 
     if (queue.length === 0) { toast('لا توجد بطاقات للمراجعة'); return; }
     state.queue = queue;
-    state.qIndex = 0;
+    state.initialQueue = queue.slice();
+    state.ratedCount = 0;
+    state.skippedCount = 0;
+    state.skipCounts = new Map();
     state.session = { easy: 0, medium: 0, hard: 0 };
-    showView('review'); renderCard();
+    showView('review');
+    renderCard();
   }
 
   function updateStarButton() {
     const btn = $('#btnStarCurrent');
     if (!btn) return;
-    const s = state.queue[state.qIndex];
+    const s = state.queue[0];
     if (!s) { btn.textContent = '☆'; btn.classList.remove('on'); return; }
     const starred = !!s.is_starred;
     btn.textContent = starred ? '⭐' : '☆';
     btn.classList.toggle('on', starred);
   }
 
+  function updateSkipHeaderButton() {
+    const btn = $('#btnSkipHeader');
+    if (!btn) return;
+    const isLast = state.queue.length <= 1;
+    btn.disabled = isLast;
+    btn.title = isLast ? 'هذه آخر بطاقة — قيّمها' : 'تخطي البطاقة (تأجيل لآخر الجلسة)';
+  }
+
   function renderCard() {
-    const s = state.queue[state.qIndex];
+    const s = state.queue[0];
     if (!s) { finishReview(); return; }
 
     state.flipped = false;
@@ -1028,11 +1004,14 @@ textarea.input { resize: vertical; min-height: 60px; }
     renderItalianWords(italianEl, s.italian);
     $('#cardArabic').textContent = s.arabic;
 
-    const total = state.queue.length, done = state.qIndex;
+    const total = state.initialQueue.length;
+    const done = state.ratedCount;
     $('#progressFill').style.width = (done / total * 100) + '%';
-    $('#progressText').textContent = `${done + 1} / ${total}`;
+    const skipSuffix = state.skippedCount ? ` · ⏭️ ${state.skippedCount}` : '';
+    $('#progressText').textContent = `${done} / ${total}${skipSuffix}`;
 
     updateStarButton();
+    updateSkipHeaderButton();
     Speech.speak(s.italian);
   }
 
@@ -1059,12 +1038,40 @@ textarea.input { resize: vertical; min-height: 60px; }
     $('#ratingRow').classList.add('is-visible');
   }
 
-  async function rateCard(rating) {
-    if (state.busy) return;
-    const s = state.queue[state.qIndex];
+  /* ---------------------------------------------------------
+     ⭐ التخطي غير المحدود — تدوير: البطاقة تنتقل لنهاية الطابور
+        لا مساس بـ SRS / next_review / streak / reviewed_today
+     --------------------------------------------------------- */
+  function skipCard() {
+    const s = state.queue[0];
     if (!s) return;
 
-    // SRS يُطبَّق بتاريخ اليوم الحالي — يشمل البطاقات المستقبلية المبكرة
+    if (state.queue.length <= 1) {
+      toast('هذه آخر بطاقة — قيّمها الآن', 'warn');
+      return;
+    }
+
+    const current = state.queue.shift();
+    state.queue.push(current);
+    state.skippedCount++;
+    state.skipCounts.set(current.id, (state.skipCounts.get(current.id) || 0) + 1);
+
+    toast('⏭️ تم تأجيل البطاقة لآخر الجلسة');
+    renderCard();
+  }
+
+  async function rateCard(rating) {
+    if (state.busy) return;
+    const s = state.queue[0];
+    if (!s) return;
+
+    // ⭐ مسار التخطي — لا يمس SRS إطلاقًا
+    if (rating === 'skip') {
+      skipCard();
+      return;
+    }
+
+    // مسار التقييم الطبيعي — SRS يُطبَّق كما هو دون تعديل
     let patch;
     if (rating === 'easy') patch = SRS.applyEasy(s);
     else if (rating === 'medium') patch = SRS.applyMedium(s);
@@ -1083,25 +1090,78 @@ textarea.input { resize: vertical; min-height: 60px; }
       Store.saveUser({ streak: state.user.streak, last_review_day: state.user.last_review_day, reviewed_today: state.user.reviewed_today, reviewed_day_key: state.user.reviewed_day_key })
     ]).then(() => setSync('online')).catch(err => { console.warn(err); setSync('offline'); toast('تعذّر التحديث السحابي', 'warn'); });
 
-    state.qIndex++;
-    if (state.qIndex >= state.queue.length) finishReview();
+    // إزالة نهائية من الطابور + عدّاد التقييم
+    state.queue.shift();
+    state.ratedCount++;
+
+    if (state.queue.length === 0) finishReview();
     else renderCard();
   }
 
+  function getMostSkippedCard() {
+    let bestId = null, bestCount = 0;
+    state.skipCounts.forEach((count, id) => {
+      if (count > bestCount) { bestCount = count; bestId = id; }
+    });
+    if (!bestId || bestCount === 0) return null;
+    const sentence = state.sentences.find(s => s.id === bestId);
+    return sentence ? { sentence, count: bestCount } : null;
+  }
+
+  function getHardToReviewCards(threshold = 3) {
+    const result = [];
+    state.skipCounts.forEach((count, id) => {
+      if (count >= threshold) {
+        const s = state.sentences.find(x => x.id === id);
+        if (s) result.push(s);
+      }
+    });
+    return result;
+  }
+
   function finishReview() {
+    const total = state.initialQueue.length;
     $('#progressFill').style.width = '100%';
-    $('#progressText').textContent = `${state.queue.length} / ${state.queue.length}`;
+    $('#progressText').textContent = `${total} / ${total} · ⏭️ ${state.skippedCount}`;
+
     const { easy, medium, hard } = state.session;
-    const total = easy + medium + hard;
+    const skipped = state.skippedCount;
+    const mostSkipped = getMostSkippedCard();
+    const hardToReview = getHardToReviewCards();
+
     $('#summarySub').textContent = `أكملت مراجعة ${total} بطاقة`;
-    $('#summaryStats').innerHTML = `
+
+    let statsHtml = `
       <div class="summary-item total"><span class="v">${total}</span><span class="l">إجمالي البطاقات</span></div>
       <div class="summary-item total"><span class="v">🔥 ${state.user.streak || 0}</span><span class="l">السلسلة اليومية</span></div>
       <div class="summary-item easy"><span class="v">${easy}</span><span class="l">سهل</span></div>
       <div class="summary-item medium"><span class="v">${medium}</span><span class="l">متوسط</span></div>
       <div class="summary-item hard"><span class="v">${hard}</span><span class="l">صعب</span></div>
-      <div class="summary-item total"><span class="v">${state.user.reviewed_today || 0}</span><span class="l">راجعت اليوم</span></div>`;
-    showView('summary'); renderDashboard();
+      ${skipped > 0 ? `<div class="summary-item skip"><span class="v">⏭️ ${skipped}</span><span class="l">مرات التخطي</span></div>` : ''}
+      <div class="summary-item total"><span class="v">${state.user.reviewed_today || 0}</span><span class="l">راجعت اليوم</span></div>
+    `;
+
+    if (mostSkipped) {
+      const preview = mostSkipped.sentence.italian.length > 50
+        ? mostSkipped.sentence.italian.substring(0, 50) + '…'
+        : mostSkipped.sentence.italian;
+      statsHtml += `<div class="summary-item skip" style="grid-column:1/-1; text-align:center;"><span class="v">⏭️ ${mostSkipped.count}×</span><span class="l">الأكثر تخطيًا: ${escapeHtml(preview)}</span></div>`;
+    }
+
+    $('#summaryStats').innerHTML = statsHtml;
+
+    const btnReviewHard = $('#btnReviewHard');
+    if (hardToReview.length > 0) {
+      btnReviewHard.style.display = 'inline-flex';
+      btnReviewHard.textContent = `🔁 أعد مراجعة الأصعب (${hardToReview.length})`;
+      btnReviewHard.onclick = () => startReview(hardToReview);
+    } else {
+      btnReviewHard.style.display = 'none';
+      btnReviewHard.onclick = null;
+    }
+
+    showView('summary');
+    renderDashboard();
   }
 
   /* =========================================================
@@ -1163,8 +1223,8 @@ textarea.input { resize: vertical; min-height: 60px; }
         closeDictionary();
         if (state.listMode) renderList();
         renderDashboard();
-        // إذا كانت هذه البطاقة معروضة حاليًا في المراجعة
-        if ($('#view-review').classList.contains('is-active') && state.queue[state.qIndex] && state.queue[state.qIndex].id === sentence.id) {
+        // إذا كانت البطاقة الحالية هي نفسها المعدَّلة في المراجعة
+        if ($('#view-review').classList.contains('is-active') && state.queue[0] && state.queue[0].id === sentence.id) {
           renderCard();
         }
       } catch (err) {
@@ -1534,7 +1594,6 @@ textarea.input { resize: vertical; min-height: 60px; }
       return b;
     };
 
-    // إجراءات حسب السياق
     if (mode === 'mistakes') {
       actions.appendChild(mk('✓ صح', 'ok', () => markCorrect(s.id)));
       actions.appendChild(mk('✗ خطأ', 'no', () => markWrong(s.id)));
@@ -1549,7 +1608,6 @@ textarea.input { resize: vertical; min-height: 60px; }
       actions.appendChild(mk('❄️ تجميد', 'freeze', () => freezeSentence(s.id)));
     }
 
-    // إجراءات مشتركة: نطق + تعديل + نجمة
     actions.appendChild(mk('🔊', '', () => Speech.speak(s.italian)));
     actions.appendChild(mk('✏️', 'edit', () => openEditPopup(s)));
     actions.appendChild(mk(s.is_starred ? '⭐' : '☆', s.is_starred ? 'star-on' : '', () => toggleStar(s.id)));
@@ -1649,14 +1707,19 @@ textarea.input { resize: vertical; min-height: 60px; }
     $('#flipCard').addEventListener('click', flipCard);
     $('#btnSpeak').addEventListener('click', e => {
       e.stopPropagation();
-      const s = state.queue[state.qIndex]; if (s) Speech.speak(s.italian);
+      const s = state.queue[0]; if (s) Speech.speak(s.italian);
     });
     $$('.btn-rating').forEach(b => b.addEventListener('click', e => { e.stopPropagation(); rateCard(b.dataset.rating); }));
 
-    // زر النجمة في شاشة المراجعة
+    // ⭐ تخطي دائم من رأس المراجعة (يعمل قبل وبعد قلب البطاقة)
+    $('#btnSkipHeader').addEventListener('click', e => {
+      e.stopPropagation();
+      skipCard();
+    });
+
     $('#btnStarCurrent').addEventListener('click', async (e) => {
       e.stopPropagation();
-      const s = state.queue[state.qIndex];
+      const s = state.queue[0];
       if (!s) return;
       await toggleStar(s.id);
       updateStarButton();
@@ -1716,7 +1779,7 @@ textarea.input { resize: vertical; min-height: 60px; }
       setSync('online');
 
       const dictVerbsCount = Object.values(dict).filter(e => e && e.type === 'verb').length;
-      console.info('[Imparo v2.1] جاهز. USER_ID =', Store.getUid(),
+      console.info('[Imparo v2.3] جاهز. USER_ID =', Store.getUid(),
         '| الجمل:', sentences.length,
         '| مميزة:', sentences.filter(s => s.is_starred).length,
         '| أفعال يدوية:', verbs.length,
